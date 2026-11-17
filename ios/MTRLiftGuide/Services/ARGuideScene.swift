@@ -151,7 +151,7 @@ final class ARGuideController: NSObject, ObservableObject {
         let blend = min(1, max(0.08, deltaTime * 6))
         arrow.orientation = simd_slerp(arrow.orientation, desired, blend)
 
-        let pulse = 1 + 0.05 * Float(sin(Double(elapsed) * 3.2))
+        let pulse = 1 + 0.03 * Float(sin(Double(elapsed) * 2.4))
         arrow.scale = SIMD3<Float>(repeating: pulse)
     }
 
@@ -290,43 +290,105 @@ final class ARGuideController: NSObject, ObservableObject {
     }
 
     /// Flat arrow lying in the entity's local XZ plane, tip pointing +Z.
+    /// One extruded piece with real thickness, plus a fading trail of smaller
+    /// arrows so the direction reads as a path instead of a pasted sticker.
     private static func makeArrow() -> Entity {
         let root = Entity()
 
-        var body = UnlitMaterial()
-        body.color = .init(tint: UIColor(red: 0.93, green: 0.16, blue: 0.30, alpha: 1))
-
-        var trail = UnlitMaterial()
-        trail.color = .init(tint: UIColor(red: 0.93, green: 0.42, blue: 0.48, alpha: 1))
-
-        let shaft = ModelEntity(
-            mesh: .generateBox(size: SIMD3<Float>(0.20, 0.014, 0.56), cornerRadius: 0.006),
-            materials: [body])
-        shaft.position = SIMD3<Float>(0, 0, 0.28)
-        root.addChild(shaft)
-
-        // Arrow head built from two blades meeting at the tip (z ≈ 0.82).
-        for side in [Float(-1), Float(1)] {
-            let blade = ModelEntity(
-                mesh: .generateBox(size: SIMD3<Float>(0.10, 0.014, 0.36), cornerRadius: 0.005),
-                materials: [body])
-            blade.position = SIMD3<Float>(side * 0.09, 0.004, 0.66)
-            blade.orientation = simd_quatf(
-                angle: -side * 0.54, axis: SIMD3<Float>(0, 1, 0))
-            root.addChild(blade)
-        }
+        let body = ModelEntity(mesh: arrowMesh(), materials: [arrowMaterial(
+            tint: UIColor(red: 0.90, green: 0.11, blue: 0.24, alpha: 1))])
+        root.addChild(body)
 
         for index in 0..<3 {
-            let dash = ModelEntity(
-                mesh: .generateBox(
-                    size: SIMD3<Float>(0.09, 0.010, 0.16), cornerRadius: 0.004),
-                materials: [trail])
-            dash.position = SIMD3<Float>(0, 0, 1.00 + Float(index) * 0.30)
-            dash.scale = SIMD3<Float>(repeating: 1 - Float(index) * 0.14)
-            root.addChild(dash)
+            let trail = ModelEntity(mesh: arrowMesh(), materials: [arrowMaterial(
+                tint: UIColor(red: 0.95, green: 0.35, blue: 0.42, alpha: 1))])
+            trail.scale = SIMD3<Float>(repeating: 0.34 - Float(index) * 0.06)
+            trail.position = SIMD3<Float>(0, 0, 1.16 + Float(index) * 0.36)
+            root.addChild(trail)
         }
 
         return root
+    }
+
+    /// Solid, light-reactive red so the arrow picks up the station lighting
+    /// instead of looking like a flat cut-out.
+    private static func arrowMaterial(tint: UIColor) -> PhysicallyBasedMaterial {
+        var material = PhysicallyBasedMaterial()
+        material.baseColor = .init(tint: tint)
+        material.roughness = 0.34
+        material.metallic = 0.05
+        material.emissiveColor = .init(color: tint.withAlphaComponent(0.45))
+        material.emissiveIntensity = 0.65
+        // The mesh supplies both faces; culling off keeps it visible from any
+        // angle while the user walks around it.
+        material.faceCulling = .none
+        return material
+    }
+
+    /// Extrudes the arrow outline (tip at +Z) into a single watertight mesh.
+    private static func arrowMesh() -> MeshResource {
+        let thickness: Float = 0.024
+        let half = thickness / 2
+
+        // Outline in the XZ plane.
+        let outline: [SIMD2<Float>] = [
+            SIMD2(0.00, 0.94),   // tip
+            SIMD2(0.31, 0.48),   // right head corner
+            SIMD2(0.12, 0.48),   // right shoulder
+            SIMD2(0.12, 0.00),   // right tail
+            SIMD2(-0.12, 0.00),  // left tail
+            SIMD2(-0.12, 0.48),  // left shoulder
+            SIMD2(-0.31, 0.48)   // left head corner
+        ]
+
+        // Head triangle plus the two shaft triangles.
+        let faces: [(Int, Int, Int)] = [(0, 1, 6), (2, 3, 4), (2, 4, 5)]
+
+        var positions: [SIMD3<Float>] = []
+        var normals: [SIMD3<Float>] = []
+        var indices: [UInt32] = []
+
+        func addTriangle(
+            _ a: SIMD2<Float>, _ b: SIMD2<Float>, _ c: SIMD2<Float>,
+            y: Float, normal: SIMD3<Float>
+        ) {
+            let base = UInt32(positions.count)
+            positions.append(SIMD3<Float>(a.x, y, a.y))
+            positions.append(SIMD3<Float>(b.x, y, b.y))
+            positions.append(SIMD3<Float>(c.x, y, c.y))
+            normals.append(contentsOf: [normal, normal, normal])
+            indices.append(contentsOf: [base, base + 1, base + 2])
+        }
+
+        for (i, j, k) in faces {
+            addTriangle(outline[i], outline[j], outline[k], y: half, normal: SIMD3<Float>(0, 1, 0))
+            addTriangle(outline[i], outline[k], outline[j], y: -half, normal: SIMD3<Float>(0, -1, 0))
+        }
+
+        for i in 0..<outline.count {
+            let a = outline[i]
+            let b = outline[(i + 1) % outline.count]
+            let edge = SIMD2<Float>(b.x - a.x, b.y - a.y)
+            let length = sqrt(edge.x * edge.x + edge.y * edge.y)
+            guard length > 0.0001 else { continue }
+            let normal = SIMD3<Float>(edge.y / length, 0, -edge.x / length)
+
+            let base = UInt32(positions.count)
+            positions.append(SIMD3<Float>(a.x, half, a.y))
+            positions.append(SIMD3<Float>(b.x, half, b.y))
+            positions.append(SIMD3<Float>(b.x, -half, b.y))
+            positions.append(SIMD3<Float>(a.x, -half, a.y))
+            normals.append(contentsOf: [normal, normal, normal, normal])
+            indices.append(contentsOf: [base, base + 1, base + 2, base, base + 2, base + 3])
+        }
+
+        var descriptor = MeshDescriptor(name: "guideArrow")
+        descriptor.positions = MeshBuffers.Positions(positions)
+        descriptor.normals = MeshBuffers.Normals(normals)
+        descriptor.primitives = .triangles(indices)
+
+        return (try? MeshResource.generate(from: [descriptor]))
+            ?? MeshResource.generateBox(size: SIMD3<Float>(0.24, thickness, 0.94))
     }
 }
 
