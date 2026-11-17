@@ -94,6 +94,7 @@ final class ARGuideController: NSObject, ObservableObject {
         }
 
         clearArrow()
+        resetCompassCalibration()
         failure = nil
         running = true
         arView.session.run(makeConfiguration(), options: [.resetTracking, .removeExistingAnchors])
@@ -111,8 +112,18 @@ final class ARGuideController: NSObject, ObservableObject {
             return
         }
         clearArrow()
+        resetCompassCalibration()
         failure = nil
         arView.session.run(makeConfiguration(), options: [.resetTracking, .removeExistingAnchors])
+    }
+
+    /// Resetting tracking throws away the world origin, so the old
+    /// camera↔compass mapping no longer means anything.
+    private func resetCompassCalibration() {
+        compassOffset = nil
+        frozenYaw = nil
+        previousCameraYaw = nil
+        turnRate = 0
     }
 
     // MARK: - Guidance input
