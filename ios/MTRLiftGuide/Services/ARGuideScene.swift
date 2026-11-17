@@ -51,6 +51,10 @@ final class ARGuideController: NSObject, ObservableObject {
     private var headingAvailable = false
 
     private var cameraYaw: Float = 0
+    private var previousCameraYaw: Float?
+    private var turnRate: Float = 0
+    private var compassOffset: Float?
+    private var frozenYaw: Float?
     private var elapsed: Float = 0
     private var lastAttempt: Float = -10
     private var searchStartedAt: Float = 0
@@ -131,7 +135,14 @@ final class ARGuideController: NSObject, ObservableObject {
         if let frame = arView.session.currentFrame {
             let columns = frame.camera.transform.columns
             let forward = -columns.2
-            cameraYaw = Float(atan2(Double(forward.x), Double(forward.z)))
+            let yaw = Float(atan2(Double(forward.x), Double(forward.z)))
+            if let previous = previousCameraYaw {
+                turnRate = abs(shortestAngle(yaw - previous)) / max(deltaTime, 0.001)
+            }
+            previousCameraYaw = yaw
+            cameraYaw = yaw
+
+            updateCompassOffset()
             recycleIfBehind(
                 forward: SIMD3<Float>(forward.x, 0, forward.z),
                 cameraPosition: SIMD3<Float>(columns.3.x, columns.3.y, columns.3.z))
@@ -155,11 +166,47 @@ final class ARGuideController: NSObject, ObservableObject {
         arrow.scale = SIMD3<Float>(repeating: pulse)
     }
 
-    /// World yaw of the travel direction: camera yaw plus the signed difference
-    /// between where the phone faces and where the waypoint bearing points.
+    /// Keeps a slowly-smoothed mapping between ARKit's world yaw and the
+    /// compass. Turning the phone moves both at the same time, so the offset
+    /// stays put and the arrow keeps pointing at the same spot in the room —
+    /// previously the two inputs were mixed per-frame, so any compass lag made
+    /// the arrow swing with the phone.
+    private func updateCompassOffset() {
+        guard headingAvailable else { return }
+        // Freeze calibration while the phone is sweeping: the compass lags the
+        // camera by a frame or two and would otherwise bend the offset.
+        guard compassOffset == nil || turnRate < 0.5 else { return }
+
+        let raw = cameraYaw - Float(deviceHeading * .pi / 180)
+
+        guard let current = compassOffset else {
+            compassOffset = raw
+            return
+        }
+
+        // Low gain: converges while standing still, ignores compass jitter.
+        compassOffset = current + shortestAngle(raw - current) * 0.02
+    }
+
+    private func shortestAngle(_ angle: Float) -> Float {
+        var value = angle
+        while value > .pi { value -= 2 * .pi }
+        while value < -.pi { value += 2 * .pi }
+        return value
+    }
+
+    /// Fixed world yaw of the travel direction for the current waypoint.
     private func currentYaw() -> Float {
-        let delta = headingAvailable ? (deviceHeading - targetBearing) : 0
-        return cameraYaw + Float(delta * .pi / 180)
+        if let offset = compassOffset {
+            return offset + Float(targetBearing * .pi / 180)
+        }
+        if let frozen = frozenYaw {
+            return frozen
+        }
+        // No compass yet: point along the view direction once and freeze, so
+        // the arrow still sits still in the world instead of chasing the phone.
+        frozenYaw = cameraYaw
+        return cameraYaw
     }
 
     /// Drops the arrow once the user has walked past it (or moved far away) so
@@ -290,18 +337,14 @@ final class ARGuideController: NSObject, ObservableObject {
     }
 
     /// Flat arrow lying in the entity's local XZ plane, tip pointing +Z.
-    /// One extruded piece with real thickness, plus a fading trail of smaller
-    /// arrows so the direction reads as a path instead of a pasted sticker.
+    /// Rounded silhouette with real thickness, plus a shrinking trail of arrows
+    /// so the direction reads as a path instead of a pasted sticker.
     private static func makeArrow() -> Entity {
         let root = Entity()
-
-        let body = ModelEntity(mesh: arrowMesh(), materials: [arrowMaterial(
-            tint: UIColor(red: 0.90, green: 0.11, blue: 0.24, alpha: 1))])
-        root.addChild(body)
+        root.addChild(arrowBody(tint: arrowRed))
 
         for index in 0..<3 {
-            let trail = ModelEntity(mesh: arrowMesh(), materials: [arrowMaterial(
-                tint: UIColor(red: 0.95, green: 0.35, blue: 0.42, alpha: 1))])
+            let trail = arrowBody(tint: arrowTrailTint)
             trail.scale = SIMD3<Float>(repeating: 0.34 - Float(index) * 0.06)
             trail.position = SIMD3<Float>(0, 0, 1.16 + Float(index) * 0.36)
             root.addChild(trail)
@@ -310,13 +353,45 @@ final class ARGuideController: NSObject, ObservableObject {
         return root
     }
 
+    /// Rounded head + capsule tail forming one soft silhouette.
+    private static func arrowBody(tint: UIColor) -> Entity {
+        let body = Entity()
+        let material = arrowMaterial(tint: tint)
+
+        body.addChild(ModelEntity(mesh: arrowHeadMesh, materials: [material]))
+
+        let shaft = ModelEntity(mesh: arrowShaftMesh, materials: [material])
+        // Sunk a hair so the head's top face always wins the shared area.
+        shaft.position = SIMD3<Float>(0, -0.002, 0)
+        body.addChild(shaft)
+
+        return body
+    }
+
+    private static let arrowRed = UIColor(red: 0.90, green: 0.11, blue: 0.24, alpha: 1)
+    private static let arrowTrailTint = UIColor(red: 0.95, green: 0.38, blue: 0.45, alpha: 1)
+
+    /// Triangle head with every corner rounded off.
+    private static let arrowHeadMesh = extruded(
+        outline: roundedOutline(
+            [SIMD2(-0.32, 0.44), SIMD2(0.32, 0.44), SIMD2(0.00, 0.98)],
+            radius: 0.09),
+        thickness: 0.03)
+
+    /// Capsule shaft: a rounded rectangle, so there are no sharp corners at all.
+    private static let arrowShaftMesh = extruded(
+        outline: roundedOutline(
+            [SIMD2(-0.13, 0.00), SIMD2(0.13, 0.00), SIMD2(0.13, 0.46), SIMD2(-0.13, 0.46)],
+            radius: 0.11),
+        thickness: 0.03)
+
     /// Solid, light-reactive red so the arrow picks up the station lighting
     /// instead of looking like a flat cut-out.
     private static func arrowMaterial(tint: UIColor) -> PhysicallyBasedMaterial {
         var material = PhysicallyBasedMaterial()
         material.baseColor = .init(tint: tint)
-        material.roughness = 0.34
-        material.metallic = 0.05
+        material.roughness = 0.32
+        material.metallic = 0.04
         material.emissiveColor = .init(color: tint.withAlphaComponent(0.45))
         material.emissiveIntensity = 0.65
         // The mesh supplies both faces; culling off keeps it visible from any
@@ -325,25 +400,50 @@ final class ARGuideController: NSObject, ObservableObject {
         return material
     }
 
-    /// Extrudes the arrow outline (tip at +Z) into a single watertight mesh.
-    private static func arrowMesh() -> MeshResource {
-        let thickness: Float = 0.024
+    /// Replaces every corner of a convex outline with a quadratic curve.
+    private static func roundedOutline(
+        _ corners: [SIMD2<Float>], radius: Float, segments: Int = 6
+    ) -> [SIMD2<Float>] {
+        var result: [SIMD2<Float>] = []
+        let count = corners.count
+        guard count >= 3 else { return corners }
+
+        for index in 0..<count {
+            let corner = corners[index]
+            let previous = corners[(index + count - 1) % count]
+            let next = corners[(index + 1) % count]
+
+            let toPrevious = previous - corner
+            let toNext = next - corner
+            let lengthPrevious = simd_length(toPrevious)
+            let lengthNext = simd_length(toNext)
+            guard lengthPrevious > 0.0001, lengthNext > 0.0001 else {
+                result.append(corner)
+                continue
+            }
+
+            let r = min(radius, min(lengthPrevious, lengthNext) * 0.49)
+            let start = corner + simd_normalize(toPrevious) * r
+            let end = corner + simd_normalize(toNext) * r
+
+            for step in 0...segments {
+                let t = Float(step) / Float(segments)
+                let inverse = 1 - t
+                result.append(
+                    start * (inverse * inverse)
+                        + corner * (2 * inverse * t)
+                        + end * (t * t))
+            }
+        }
+        return result
+    }
+
+    /// Extrudes a convex outline (in the XZ plane, tip at +Z) into a prism.
+    private static func extruded(outline raw: [SIMD2<Float>], thickness: Float) -> MeshResource {
+        var outline = raw
+        if signedArea(outline) < 0 { outline.reverse() }
+
         let half = thickness / 2
-
-        // Outline in the XZ plane.
-        let outline: [SIMD2<Float>] = [
-            SIMD2(0.00, 0.94),   // tip
-            SIMD2(0.31, 0.48),   // right head corner
-            SIMD2(0.12, 0.48),   // right shoulder
-            SIMD2(0.12, 0.00),   // right tail
-            SIMD2(-0.12, 0.00),  // left tail
-            SIMD2(-0.12, 0.48),  // left shoulder
-            SIMD2(-0.31, 0.48)   // left head corner
-        ]
-
-        // Head triangle plus the two shaft triangles.
-        let faces: [(Int, Int, Int)] = [(0, 1, 6), (2, 3, 4), (2, 4, 5)]
-
         var positions: [SIMD3<Float>] = []
         var normals: [SIMD3<Float>] = []
         var indices: [UInt32] = []
@@ -360,14 +460,17 @@ final class ARGuideController: NSObject, ObservableObject {
             indices.append(contentsOf: [base, base + 1, base + 2])
         }
 
-        for (i, j, k) in faces {
-            addTriangle(outline[i], outline[j], outline[k], y: half, normal: SIMD3<Float>(0, 1, 0))
-            addTriangle(outline[i], outline[k], outline[j], y: -half, normal: SIMD3<Float>(0, -1, 0))
+        // Convex outline: a fan from the first vertex covers both caps.
+        let up = SIMD3<Float>(0, 1, 0)
+        let down = SIMD3<Float>(0, -1, 0)
+        for index in 1..<(outline.count - 1) {
+            addTriangle(outline[0], outline[index], outline[index + 1], y: half, normal: up)
+            addTriangle(outline[0], outline[index + 1], outline[index], y: -half, normal: down)
         }
 
-        for i in 0..<outline.count {
-            let a = outline[i]
-            let b = outline[(i + 1) % outline.count]
+        for index in 0..<outline.count {
+            let a = outline[index]
+            let b = outline[(index + 1) % outline.count]
             let edge = SIMD2<Float>(b.x - a.x, b.y - a.y)
             let length = sqrt(edge.x * edge.x + edge.y * edge.y)
             guard length > 0.0001 else { continue }
@@ -388,7 +491,17 @@ final class ARGuideController: NSObject, ObservableObject {
         descriptor.primitives = .triangles(indices)
 
         return (try? MeshResource.generate(from: [descriptor]))
-            ?? MeshResource.generateBox(size: SIMD3<Float>(0.24, thickness, 0.94))
+            ?? MeshResource.generateBox(size: SIMD3<Float>(0.26, thickness, 0.92))
+    }
+
+    private static func signedArea(_ outline: [SIMD2<Float>]) -> Float {
+        var total: Float = 0
+        for index in 0..<outline.count {
+            let current = outline[index]
+            let next = outline[(index + 1) % outline.count]
+            total += current.x * next.y - next.x * current.y
+        }
+        return total / 2
     }
 }
 

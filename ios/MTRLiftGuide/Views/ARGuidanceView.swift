@@ -85,6 +85,11 @@ struct ARGuidanceView: View {
             updateDirectionInLiveActivity()
             arGuide.setHeading(heading.trueHeading, available: heading.isHeadingAvailable)
         }
+        // Compass permission can arrive after the screen appears; without this
+        // the AR arrow would never learn that heading input became available.
+        .onChange(of: heading.isHeadingAvailable) { _, available in
+            arGuide.setHeading(heading.trueHeading, available: available)
+        }
         .onDisappear {
             camera.stop()
             arGuide.stop()
