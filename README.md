@@ -9,7 +9,7 @@
 ## 功能
 
 - **站內無障礙導航**：電梯 / 扶梯兩條路線，逐步指示，並估算步行距離與時間。
-- **AR 實景 + 羅盤**：相機實景上疊加方向箭頭，隨手機朝向即時指出前進方向。
+- **真 AR 實景導航**：ARKit 世界追蹤 + RealityKit，把箭頭真正錨定在地面或牆身上（貼合平面、隨手機移動保持在世界座標）；箭頭指向當前指示的羅盤方位，走過之後會自動在前方重新投射。
 - **靈動島 / Live Activity**：
   - 小島顯示**出口、羅盤方向、出行方式（電梯 / 樓梯）與進度**；
   - 大島**羅列完整步驟**，當前步驟以品牌紅高亮；
@@ -32,7 +32,8 @@
 | UI | SwiftUI（iOS 17+） |
 | 靈動島 | ActivityKit + WidgetKit |
 | 定位 / 羅盤 | CoreLocation |
-| 相機 | AVFoundation |
+| AR | ARKit + RealityKit（世界追蹤、平面偵測、場景深度） |
+| 相機（模擬器 fallback） | AVFoundation |
 | 站內地圖 | PDFKit |
 | 語音 | AVSpeechSynthesizer |
 | 觸覺 | UIKit Feedback Generators |
@@ -47,7 +48,7 @@ ios/
 │  ├─ App/                       # 入口、環境注入
 │  ├─ Design/                    # 玻璃質感、觸覺、設計令牌
 │  ├─ Model/                     # 車站資料、路線引擎、互助請求、本地化
-│  ├─ Services/                  # 相機、羅盤、語音、天氣、Live Activity
+│  ├─ Services/                  # AR 場景、相機、羅盤、語音、天氣、Live Activity
 │  ├─ Views/                     # 首頁、車站、出口、路線、AR、互助板
 │  ├─ Resources/                 # stations.json / official_maps.json
 │  └─ Assets.xcassets/           # App 圖標
@@ -65,7 +66,7 @@ figma-design/                    # 設計稿
 
 1. 用 Xcode 打開 `ios/MTRLiftGuide.xcodeproj`。
 2. 在 *Signing & Capabilities* 選擇你的開發團隊。
-3. 選擇真機運行（**相機與羅盤功能需真機**，模擬器不可用）。
+3. 選擇真機運行（**AR 世界追蹤、相機與羅盤均需真機**，模擬器只會退回普通相機預覽）。
 
 ```bash
 # 命令列構建（真機）

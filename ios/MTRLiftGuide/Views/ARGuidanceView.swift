@@ -2,11 +2,13 @@
 //  ARGuidanceView.swift
 //  MTR Lift Guide
 //
-//  Step 5 — live camera with a compass-driven overlay, one waypoint at a time,
-//  and spoken guidance. Presented full-screen from the tab bar, or pushed from
-//  the route step (`embedded`).
+//  Step 5 — AR guidance: an ARKit session anchors a RealityKit arrow on the
+//  floor or wall in front of the user, pointing at the current waypoint
+//  bearing, with a card, spoken guidance and Dynamic Island updates on top.
+//  Devices without world tracking fall back to the plain camera feed.
 //
 
+import ARKit
 import SwiftUI
 import UIKit
 
@@ -20,10 +22,15 @@ struct ARGuidanceView: View {
     let onFinish: () -> Void
 
     @StateObject private var camera = CameraModel()
+    @StateObject private var arGuide = ARGuideController()
     @StateObject private var heading = HeadingService()
     @StateObject private var voice = VoiceService()
     @State private var index = 0
     @State private var lastDirectionSymbol = ""
+
+    /// World tracking needs a real sensor stack; the simulator falls back to the
+    /// plain camera feed with the compass overlay.
+    private var supportsAR: Bool { ARWorldTrackingConfiguration.isSupported }
 
     private var waypoints: [Waypoint] {
         guard let line = network.primaryLine(for: station) else { return [] }
@@ -38,31 +45,23 @@ struct ARGuidanceView: View {
         ZStack {
             Color.black.ignoresSafeArea()
 
-            // Always mount the camera preview so its controller starts the session;
-            // show a status overlay on top while it boots or fails.
-            CameraPreview(model: camera)
-                .ignoresSafeArea()
-
-            if !camera.isRunning {
-                VStack(spacing: 14) {
-                    Image(systemName: camera.failure == nil ? "camera.viewfinder"
-                          : (camera.failure == .denied ? "camera.badge.ellipsis" : "camera.slash"))
-                        .font(.system(size: 34))
-                    Text(statusMessage)
-                        .font(.footnote)
-                        .multilineTextAlignment(.center)
-                    if camera.failure == .denied {
-                        Button {
-                            openSettings()
-                        } label: {
-                            Label(lang.t("開啟設定", "Open Settings"),
-                                  systemImage: "gear")
-                        }
-                        .glassButton(cornerRadius: 16)
-                    }
+            if supportsAR {
+                // ARKit-backed scene: the arrow is anchored on the real floor
+                // or wall in front of the user.
+                ARGuidanceScene(guide: arGuide)
+                    .ignoresSafeArea()
+                if let failure = arGuide.failure {
+                    failureBanner(failure)
                 }
-                .foregroundStyle(.white.opacity(0.85))
-                .padding(.horizontal, 32)
+            } else {
+                // Always mount the camera preview so its controller starts the session;
+                // show a status overlay on top while it boots or fails.
+                CameraPreview(model: camera)
+                    .ignoresSafeArea()
+
+                if !camera.isRunning {
+                    cameraBanner
+                }
             }
 
             overlay
@@ -70,11 +69,28 @@ struct ARGuidanceView: View {
         .navigationTitle(Text(lang.t("AR 實景導航", "AR guidance")))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarBackground(.hidden, for: .navigationBar)
-        .task { heading.request(); startLiveActivity() }
+        .task {
+            heading.request()
+            startLiveActivity()
+            arGuide.setTarget(bearing: target)
+            arGuide.setHeading(heading.trueHeading, available: heading.isHeadingAvailable)
+        }
         .onAppear { speakCurrent() }
-        .onChange(of: index) { speakCurrent(); updateLiveActivity() }
-        .onChange(of: heading.trueHeading) { _ in updateDirectionInLiveActivity() }
-        .onDisappear { camera.stop(); voice.stop(); GuidanceActivity.shared.end() }
+        .onChange(of: index) {
+            speakCurrent()
+            updateLiveActivity()
+            arGuide.setTarget(bearing: target)
+        }
+        .onChange(of: heading.trueHeading) { _ in
+            updateDirectionInLiveActivity()
+            arGuide.setHeading(heading.trueHeading, available: heading.isHeadingAvailable)
+        }
+        .onDisappear {
+            camera.stop()
+            arGuide.stop()
+            voice.stop()
+            GuidanceActivity.shared.end()
+        }
     }
 
     // MARK: - Overlay
@@ -83,6 +99,10 @@ struct ARGuidanceView: View {
         VStack {
             progressPill
                 .padding(.top, 8)
+            if supportsAR, arGuide.failure == nil, arGuide.status == .searching {
+                arHintPill
+                    .padding(.top, 6)
+            }
             Spacer()
             if let current {
                 waypointCard(current)
@@ -100,11 +120,35 @@ struct ARGuidanceView: View {
                 .frame(width: 8, height: 8)
             Text("\(min(index + 1, waypoints.count)) / \(waypoints.count) · \(lang.t(station.zh, station.en)) → \(lang.t("出口", "Exit")) \(exit.id)")
                 .font(.caption.weight(.semibold))
+            if case .placed(let alignment) = arGuide.status {
+                Text(alignment == .floor
+                     ? lang.t("AR · 地面", "AR · floor")
+                     : lang.t("AR · 牆身", "AR · wall"))
+                    .font(.caption2.weight(.bold))
+                    .foregroundStyle(Color(red: 0.98, green: 0.35, blue: 0.42))
+            }
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 12)
         .padding(.vertical, 7)
         .glassSurface(cornerRadius: 20, tint: .black)
+    }
+
+    /// Shown while the session is still looking for a surface to anchor onto.
+    private var arHintPill: some View {
+        HStack(spacing: 8) {
+            ProgressView()
+                .controlSize(.mini)
+                .tint(.white)
+            Text(lang.t("將手機對準地面或牆身，箭頭會投射到現場",
+                        "Point at the floor or a wall — the arrow lands in the scene"))
+                .font(.caption.weight(.medium))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 8)
+        .glassSurface(cornerRadius: 18, tint: .black)
     }
 
     private func waypointCard(_ wp: Waypoint) -> some View {
@@ -150,6 +194,19 @@ struct ARGuidanceView: View {
                 .buttonStyle(PrimaryButtonStyle())
                 .frame(maxWidth: .infinity)
 
+                if supportsAR {
+                    Button {
+                        Haptics.selection()
+                        arGuide.recenter()
+                    } label: {
+                        Image(systemName: "viewfinder")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                    .frame(width: 56, height: 54)
+                    .glassButton()
+                    .accessibilityLabel(Text(lang.t("重新掃描", "Rescan surface")))
+                }
+
                 Button {
                     restartJourney()
                 } label: {
@@ -185,6 +242,73 @@ struct ARGuidanceView: View {
             return lang.t("此裝置沒有可用的後置鏡頭。", "No rear camera is available on this device.")
         case .none:
             return lang.t("正在啓動相機…", "Starting camera…")
+        }
+    }
+
+    // MARK: - Status banners
+
+    private var cameraBanner: some View {
+        VStack(spacing: 14) {
+            Image(systemName: camera.failure == nil ? "camera.viewfinder"
+                  : (camera.failure == .denied ? "camera.badge.ellipsis" : "camera.slash"))
+                .font(.system(size: 34))
+            Text(statusMessage)
+                .font(.footnote)
+                .multilineTextAlignment(.center)
+            if camera.failure == .denied {
+                Button {
+                    openSettings()
+                } label: {
+                    Label(lang.t("開啟設定", "Open Settings"),
+                          systemImage: "gear")
+                }
+                .glassButton(cornerRadius: 16)
+            }
+        }
+        .foregroundStyle(.white.opacity(0.85))
+        .padding(.horizontal, 32)
+    }
+
+    private func failureBanner(_ failure: ARGuideController.Failure) -> some View {
+        VStack(spacing: 14) {
+            Image(systemName: failureSymbol(failure))
+                .font(.system(size: 34))
+            Text(failureMessage(failure))
+                .font(.footnote)
+                .multilineTextAlignment(.center)
+            if failure == .cameraDenied {
+                Button {
+                    openSettings()
+                } label: {
+                    Label(lang.t("開啟設定", "Open Settings"),
+                          systemImage: "gear")
+                }
+                .glassButton(cornerRadius: 16)
+            }
+        }
+        .foregroundStyle(.white.opacity(0.85))
+        .padding(.horizontal, 32)
+    }
+
+    private func failureSymbol(_ failure: ARGuideController.Failure) -> String {
+        switch failure {
+        case .unsupported: return "arkit"
+        case .cameraDenied: return "camera.badge.ellipsis"
+        case .interrupted: return "exclamationmark.triangle"
+        }
+    }
+
+    private func failureMessage(_ failure: ARGuideController.Failure) -> String {
+        switch failure {
+        case .unsupported:
+            return lang.t("此裝置不支援 AR 世界追蹤，已切換為相機指示模式。",
+                          "AR world tracking is unavailable on this device. Showing the camera view instead.")
+        case .cameraDenied:
+            return lang.t("相機權限未開啟，AR 無法啟動。請在設定中允許使用相機。",
+                          "AR needs the camera. Please allow camera access in Settings.")
+        case .interrupted(let reason):
+            return lang.t("AR 追蹤中斷，請重新掃描。", "AR tracking was interrupted. Please rescan.")
+                + "\n" + reason
         }
     }
 
@@ -283,6 +407,7 @@ struct ARGuidanceView: View {
 
     private func restartJourney() {
         camera.stop()
+        arGuide.stop()
         voice.stop()
         onFinish()
     }

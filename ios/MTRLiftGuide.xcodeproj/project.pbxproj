@@ -28,6 +28,7 @@
 		8217F66FCD3F4C03640952C1 /* StationMapCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C065A6BCFC989F89D96DF173 /* StationMapCard.swift */; };
 		822EE5C717A6941769E38C0D /* StationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D88084C804B18AB9244325 /* StationListView.swift */; };
 		97AD10180A11B3074CF4838E /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = B383E179774FE4EDFA97E00D /* CameraPreview.swift */; };
+		A7C41E0B9D5F42C6B8A31D07 /* ARGuideScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F8B64A1D7E4F03A9B5C81E /* ARGuideScene.swift */; };
 		9A2973F59B22CC32EB381A9F /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB68B4A6D5953FB69B709FFD /* WeatherService.swift */; };
 		B8AC84204B884D0648486F31 /* RouteEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909A998BC443389EB2CCA0FE /* RouteEngine.swift */; };
 		CB9FE59C242D8B08694FE8F4 /* GuidanceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */; };
@@ -98,6 +99,7 @@
 		9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceActivityAttributes.swift; sourceTree = "<group>"; };
 		A698E6089EAD87F1961B8737 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B383E179774FE4EDFA97E00D /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
+		C2F8B64A1D7E4F03A9B5C81E /* ARGuideScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARGuideScene.swift; sourceTree = "<group>"; };
 		BF0899845DA64DD05D0844E6 /* HeadingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingService.swift; sourceTree = "<group>"; };
 		C065A6BCFC989F89D96DF173 /* StationMapCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationMapCard.swift; sourceTree = "<group>"; };
 		CB30225A300C17CFC1A73A9D /* FlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowTests.swift; sourceTree = "<group>"; };
@@ -126,6 +128,7 @@
 		45B5C6A676868233FC3C9E4E /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				C2F8B64A1D7E4F03A9B5C81E /* ARGuideScene.swift */,
 				B383E179774FE4EDFA97E00D /* CameraPreview.swift */,
 				D9785259073DDEEFE109688F /* GuidanceActivity.swift */,
 				BF0899845DA64DD05D0844E6 /* HeadingService.swift */,
@@ -363,6 +366,7 @@
 				31C28941800414EF97241011 /* ARGuidanceView.swift in Sources */,
 				328134105C966F59B7BE05DC /* AccessibilityView.swift in Sources */,
 				97AD10180A11B3074CF4838E /* CameraPreview.swift in Sources */,
+				A7C41E0B9D5F42C6B8A31D07 /* ARGuideScene.swift in Sources */,
 				A10000000000000000000004 /* HelpBoardView.swift in Sources */,
 				A10000000000000000000002 /* HelpRequest.swift in Sources */,
 				2C03526FF4E6D6B4FC114AC4 /* ExitListView.swift in Sources */,
