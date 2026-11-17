@@ -21,6 +21,9 @@ xcuserdata/
 node_modules/
 dist/
 
+# Editors
+.vscode/
+
 # Misc
 .env
 *.log
