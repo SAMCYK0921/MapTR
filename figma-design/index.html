@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+<meta charset="UTF-8">
+<title>MTR Exit Lift Guide — Figma Import (iPhone 390×844)</title>
+<!--
+  Figma 导入说明：
+  1. 在 Figma 安装 "html.to.design" 插件
+  2. 用浏览器打开本文件，复制 URL 或粘贴 HTML
+  3. 插件会生成 5 个可编辑的 iPhone Frame (390×844)
+-->
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap');
+
+:root{
+  --mtr-red:#9D1535; --mtr-red-dark:#7A0F29; --mtr-red-tint:#F7E8EC;
+  --ink:#1C1B1F; --ink-2:#5B5863; --ink-3:#8B8894;
+  --bg:#FAF7F4; --surface:#FFFFFF; --line:#ECE7E2;
+  --amber-bg:#FFF7E0; --amber-border:#F2C94C; --amber-ink:#7A5A00;
+  --ok:#1E7A46; --radius-card:16px; --radius-pill:999px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-font-smoothing:antialiased}
+body{font-family:'Atkinson Hyperlegible','PingFang HK',sans-serif;background:#EDEAE6;display:flex;gap:48px;padding:48px;flex-wrap:wrap}
+.frame{width:390px;height:844px;background:var(--bg);border-radius:44px;border:10px solid #1C1B1F;overflow:hidden;position:relative;flex-shrink:0;display:flex;flex-direction:column}
+.pad{padding:0 20px}
+
+/* ── 设计原则标注带（仅设计稿显示） ── */
+.principle{background:#1C1B1F;color:#fff;font-size:10px;letter-spacing:.06em;padding:4px 20px;text-transform:uppercase;opacity:.92}
+
+/* ── 顶部导航 ── */
+.topbar{display:flex;align-items:center;gap:10px;padding:60px 20px 12px;background:var(--surface);border-bottom:1px solid var(--line)}
+.back{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;background:var(--mtr-red-tint);color:var(--mtr-red);font-weight:700;font-size:20px}
+.topbar-title{font-size:16px;font-weight:700;color:var(--ink)}
+.topbar-sub{font-size:12px;color:var(--ink-2)}
+
+/* ── 步骤指示器（Hick: 渐进披露 / 格式塔: 连续性） ── */
+.stepper{display:flex;gap:6px;align-items:center;padding:14px 20px;background:var(--surface);border-bottom:1px solid var(--line)}
+.step-dot{height:6px;flex:1;border-radius:3px;background:var(--line)}
+.step-dot.active{background:var(--mtr-red)}
+.step-dot.done{background:#D9A3B2}
+.step-label{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--mtr-red);padding:0 20px;background:var(--surface)}
+
+/* ── 标题区（格式塔: 相近性 — 中英成组） ── */
+.q-en{font-size:28px;font-weight:700;color:var(--ink);letter-spacing:-.02em;margin-top:16px}
+.q-zh{font-size:15px;color:var(--ink-2);margin-top:4px;margin-bottom:16px}
+
+/* ── 搜索框 ── */
+.search{display:flex;align-items:center;gap:10px;height:52px;background:var(--surface);border:1.5px solid var(--line);border-radius:14px;padding:0 16px;margin-bottom:16px;color:var(--ink-3);font-size:15px}
+
+/* ── 车站卡片网格（格式塔: 相似性；Fitts: ≥52px 目标） ── */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.station{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-card);padding:14px;min-height:96px}
+.station .name{font-size:15px;font-weight:700;color:var(--ink)}
+.station .zh{font-size:12px;color:var(--ink-2);margin-top:2px}
+.line-tag{display:inline-flex;align-items:center;gap:5px;margin-top:10px;font-size:10.5px;font-weight:700;color:var(--ink-2)}
+.line-dot{width:8px;height:8px;border-radius:50%}
+.exits{font-size:10.5px;color:var(--ink-3);margin-top:4px}
+.station.sel{border-color:var(--mtr-red);background:var(--mtr-red-tint)}
+
+/* ── 列表行（Step2/3/4: Fitts 大目标 + 格式塔: 共同区域分组） ── */
+.list{display:flex;flex-direction:column;gap:10px}
+.row{background:var(--surface);border:1.5px solid var(--line);border-radius:var(--radius-card);padding:14px 16px;display:flex;gap:12px;align-items:flex-start;min-height:64px}
+.row.sel{border-color:var(--mtr-red);box-shadow:inset 0 0 0 1px var(--mtr-red)}
+.badge{width:36px;height:36px;border-radius:10px;background:var(--mtr-red);color:#fff;font-weight:700;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.badge.soft{background:var(--mtr-red-tint);color:var(--mtr-red)}
+.badge.green{background:#E5F2EA;color:var(--ok)}
+.row .t{font-size:14.5px;font-weight:700;color:var(--ink)}
+.row .d{font-size:12px;color:var(--ink-2);margin-top:3px;line-height:1.45}
+.chips{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.chip{font-size:10.5px;font-weight:700;padding:3px 8px;border-radius:6px;background:var(--bg);border:1px solid var(--line);color:var(--ink-2)}
+
+/* ── Heads-up 警示（格式塔: 图形-背景，颜色成组） ── */
+.alert{background:var(--amber-bg);border:1.5px solid var(--amber-border);border-radius:var(--radius-card);padding:12px 14px;font-size:12px;line-height:1.5;color:var(--amber-ink);margin-bottom:14px}
+.alert b{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+
+/* ── 底部动作区（Fitts/拇指热区: 主按钮置于底部拇指可达） ── */
+.bottom{margin-top:auto;padding:12px 20px calc(20px + 24px);background:linear-gradient(to top,var(--bg) 70%,transparent);display:flex;flex-direction:column;gap:10px}
+.btn{height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;gap:10px}
+.btn-primary{background:var(--mtr-red);color:#fff}
+.btn-secondary{background:var(--surface);color:var(--mtr-red);border:1.5px solid var(--mtr-red)}
+.btn-ghost{background:transparent;color:var(--ink-2);height:44px;font-size:14px}
+.btn-row{display:flex;gap:10px}
+.btn-row .btn{flex:1;height:52px;font-size:14.5px;border-radius:14px}
+
+/* ── Step5 AR ── */
+.ar-view{margin:16px 20px;height:430px;border-radius:20px;background:linear-gradient(160deg,#2A1E22 0%,#4A2C35 55%,#7A3B47 100%);position:relative;overflow:hidden;flex-shrink:0}
+.ar-view::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,transparent 0 46px,rgba(255,255,255,.05) 46px 47px)}
+.ar-chip{position:absolute;top:14px;left:14px;background:rgba(28,27,31,.72);color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px;display:flex;gap:6px;align-items:center}
+.live-dot{width:7px;height:7px;border-radius:50%;background:#FF5A5A}
+.ar-count{position:absolute;top:14px;right:14px;background:rgba(28,27,31,.72);color:#fff;font-size:11px;font-weight:700;padding:6px 10px;border-radius:8px}
+.arrow-hub{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:84px;height:84px;border-radius:50%;background:var(--mtr-red);display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 14px rgba(157,21,53,.25),0 0 0 28px rgba(157,21,53,.12)}
+.arrow-hub span{color:#fff;font-size:34px}
+.wp-card{position:absolute;left:14px;right:14px;bottom:14px;background:rgba(255,255,255,.94);border-radius:14px;padding:12px 14px}
+.wp-card .k{font-size:10.5px;font-weight:700;letter-spacing:.08em;color:var(--mtr-red)}
+.wp-card .v{font-size:14.5px;font-weight:700;color:var(--ink);margin-top:2px}
+.wp-card .m{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+
+/* route timeline (Step4) — 格式塔: 连续性 */
+.timeline{display:flex;flex-direction:column}
+.tl-item{display:flex;gap:12px}
+.tl-rail{display:flex;flex-direction:column;align-items:center}
+.tl-node{width:26px;height:26px;border-radius:50%;background:var(--surface);border:2px solid var(--mtr-red);color:var(--mtr-red);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tl-node.fill{background:var(--mtr-red);color:#fff}
+.tl-line{width:2px;flex:1;background:var(--line);margin:2px 0}
+.tl-body{padding-bottom:18px;flex:1}
+.tl-body .t{font-size:14px;font-weight:700;color:var(--ink)}
+.tl-body .d{font-size:12px;color:var(--ink-2);margin-top:2px;line-height:1.45}
+.tl-body .meta{font-size:11px;color:var(--ink-3);margin-top:4px}
+
+/* home indicator */
+.home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(28,27,31,.3)}
+</style>
+</head>
+<body>
+
+<!-- ══════════ FRAME 1 · STEP 1 选车站 ══════════ -->
+<div class="frame">
+  <div class="principle">F1 · Hick（渐进披露）+ 格式塔相似性 · 触控目标 ≥52px</div>
+  <div class="topbar">
+    <div class="back">‹</div>
+    <div><div class="topbar-title">MTR Exit / Lift Guide</div><div class="topbar-sub">港鐵出口 · 無障礙指南</div></div>
+  </div>
+  <div class="stepper"><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+  <div class="step-label">STEP 1 · 第一步（共 5 步）</div>
+  <div class="pad">
+    <div class="q-en">Which station are you in?</div>
+    <div class="q-zh">你現在在哪個車站？</div>
+    <div class="search">⌕ &nbsp;Search station · 搜尋車站</div>
+    <div class="grid">
+      <div class="station sel"><div class="name">Whampoa</div><div class="zh">黃埔</div><div class="line-tag"><span class="line-dot" style="background:#7DBA00"></span>Kwun Tong Line</div><div class="exits">3 exits · 3 個出口</div></div>
+      <div class="station"><div class="name">Kennedy Town</div><div class="zh">堅尼地城</div><div class="line-tag"><span class="line-dot" style="background:#0075A9"></span>Island Line</div><div class="exits">2 exits · 2 個出口</div></div>
+      <div class="station"><div class="name">HKU</div><div class="zh">香港大學</div><div class="line-tag"><span class="line-dot" style="background:#0075A9"></span>Island Line</div><div class="exits">2 exits · 2 個出口</div></div>
+      <div class="station"><div class="name">Sai Ying Pun</div><div class="zh">西營盤</div><div class="line-tag"><span class="line-dot" style="background:#0075A9"></span>Island Line</div><div class="exits">3 exits · 3 個出口</div></div>
+      <div class="station"><div class="name">Sheung Wan</div><div class="zh">上環</div><div class="line-tag"><span class="line-dot" style="background:#0075A9"></span>Island Line</div><div class="exits">3 exits · 3 個出口</div></div>
+      <div class="station"><div class="name">Central</div><div class="zh">中環</div><div class="line-tag"><span class="line-dot" style="background:#0075A9"></span>Island Line</div><div class="exits">8 exits · 8 個出口</div></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="btn btn-primary">Continue · 下一步 →</div>
+  </div>
+  <div class="home"></div>
+</div>
+
+<!-- ══════════ FRAME 2 · STEP 2 选出口 ══════════ -->
+<div class="frame">
+  <div class="principle">F2 · 格式塔共同区域分组 + 图形-背景（警示卡）· 錯誤預防（Poka-yoke）</div>
+  <div class="topbar">
+    <div class="back">‹</div>
+    <div><div class="topbar-title">Whampoa 黃埔</div><div class="topbar-sub">Step 2 · Exit · 選擇出口</div></div>
+  </div>
+  <div class="stepper"><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+  <div class="step-label">STEP 2 · 第二步</div>
+  <div class="pad">
+    <div class="q-en">Where are you heading?</div>
+    <div class="q-zh">你想要哪個出口？</div>
+    <div class="alert"><b>⚠ Heads-up · 注意</b>部分出口互不連通：Exit A 與 Exit B／C 位於不同隧道段。選錯出口需重新入閘。單行道佈局，如走錯需繞行約 400 米。</div>
+    <div class="list">
+      <div class="row sel"><div class="badge">A</div><div style="flex:1"><div class="t">Whampoa main exit · 黃埔主出口</div><div class="d">Barrier-free route to Whampoa Garden · 無障礙通道往黃埔花園</div><div class="chips"><span class="chip">Concourse Lift L1 · 3 min</span><span class="chip">Coach 2 · 5 min</span></div></div></div>
+      <div class="row"><div class="badge soft">B</div><div style="flex:1"><div class="t">Whampoa side exit · 黃埔側出口</div><div class="d">Serves Hung Hom direction · 往紅磡方向</div><div class="chips"><span class="chip">Coach 6 · 3 min</span></div></div></div>
+      <div class="row"><div class="badge soft">C</div><div style="flex:1"><div class="t">Whampoa rear exit · 黃埔後出口</div><div class="d">Via footbridge to Tak On St · 經行人天橋往德安街</div><div class="chips"><span class="chip">Concourse Lift L3 · 4 min</span></div></div></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="btn btn-primary">Continue · 下一步 →</div>
+  </div>
+  <div class="home"></div>
+</div>
+
+<!-- ══════════ FRAME 3 · STEP 3 无障碍方式 ══════════ -->
+<div class="frame">
+  <div class="principle">F3 · 格式塔相似性（同類選項同構）· Fitts（大卡片目標）· 首選項預選（默認推薦）</div>
+  <div class="topbar">
+    <div class="back">‹</div>
+    <div><div class="topbar-title">Whampoa → Exit A</div><div class="topbar-sub">Step 3 · Accessibility · 無障礙選項</div></div>
+  </div>
+  <div class="stepper"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div><div class="step-dot"></div></div>
+  <div class="step-label">STEP 3 · 第三步</div>
+  <div class="pad">
+    <div class="q-en">Do you need a lift?</div>
+    <div class="q-zh">需要升降機嗎？</div>
+    <div class="list">
+      <div class="row sel"><div class="badge green">✓</div><div style="flex:1"><div class="t">Lift all the way · 全程電梯</div><div class="d">Step-free from platform to Exit A using Concourse Lift L1. 經大堂升降機 L1，由月台無障礙直達 A 出口。</div></div></div>
+      <div class="row"><div class="badge soft">⇕</div><div style="flex:1"><div class="t">Concourse Lift L1 · 大堂升降機</div><div class="d">Working · 運作中 — Concourse, near Exit A 大堂近 A 出口</div><div class="chips"><span class="chip">L1 Status 運作中</span></div></div></div>
+      <div class="row"><div class="badge soft">⇗</div><div style="flex:1"><div class="t">Escalator or stairs · 扶梯或樓梯</div><div class="d">Usually quickest, but involves steps up to the concourse. 通常最快，但需步行上大堂。</div></div></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="btn btn-primary">Show route · 顯示路線 →</div>
+  </div>
+  <div class="home"></div>
+</div>
+
+<!-- ══════════ FRAME 4 · STEP 4 路线详情 ══════════ -->
+<div class="frame">
+  <div class="principle">F4 · 格式塔連續性（時間線軌道）· 分塊記憶（每步一個動作）· 單通道一致性</div>
+  <div class="topbar">
+    <div class="back">‹</div>
+    <div><div class="topbar-title">Whampoa → Exit A</div><div class="topbar-sub">Step 4 · Route · 路線詳情</div></div>
+  </div>
+  <div class="stepper"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div><div class="step-dot"></div></div>
+  <div class="step-label">STEP 4 · 第四步</div>
+  <div class="pad" style="padding-top:4px">
+    <div class="alert" style="margin-top:14px"><b>⚠ In this station · 本站提示</b>Concourse Lift L1 is temporarily out of service · 大堂升降機 L1 暫停服務，請改用 L2（近 B 出口）。</div>
+    <div class="timeline">
+      <div class="tl-item"><div class="tl-rail"><div class="tl-node fill">1</div><div class="tl-line"></div></div><div class="tl-body"><div class="t">Ride in coach 2 · 乘搭第 2 卡車廂</div><div class="d">Coach 2 stops closest to Exit A, so you walk the least distance. 第 2 卡最接近 A 出口，步行距離最短。</div></div></div>
+      <div class="tl-item"><div class="tl-rail"><div class="tl-node fill">2</div><div class="tl-line"></div></div><div class="tl-body"><div class="t">Take Concourse Lift L1 · 乘搭大堂升降機 L1</div><div class="d">Step-free all the way. 全程無障礙。</div><div class="meta">~3 min · 約 3 分鐘</div></div></div>
+      <div class="tl-item"><div class="tl-rail"><div class="tl-node fill">3</div><div class="tl-line"></div></div><div class="tl-body"><div class="t">Follow the signs for Exit A · 跟隨 A 出口指示</div><div class="d">Walk past the ticket gates. 途經客務中心。</div><div class="meta">~2 min · 約 2 分鐘</div></div></div>
+      <div class="tl-item"><div class="tl-rail"><div class="tl-node">4</div></div><div class="tl-body"><div class="t">Arrive at Exit A · 抵達 A 出口</div><div class="d">Whampoa main exit · 黃埔主出口</div></div></div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="btn-row">
+      <div class="btn btn-primary">AR guidance AR導航</div>
+      <div class="btn btn-secondary">Voice 語音導航</div>
+    </div>
+    <div class="btn btn-ghost">Change exit · 更改出口</div>
+  </div>
+  <div class="home"></div>
+</div>
+
+<!-- ══════════ FRAME 5 · STEP 5 AR 导航 ══════════ -->
+<div class="frame">
+  <div class="principle">F5 · Fitts（底部拇指區大按鈕）· 狀態可視（進度 3/4 + 當前指令）· 單任務聚焦</div>
+  <div class="topbar">
+    <div class="back">‹</div>
+    <div><div class="topbar-title">AR guidance · 實景導航</div><div class="topbar-sub">Whampoa → Exit A · 跟手機指向的方向</div></div>
+  </div>
+  <div class="stepper"><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot done"></div><div class="step-dot active"></div></div>
+  <div class="ar-view">
+    <div class="ar-chip"><span class="live-dot"></span>Live AR 即時導航</div>
+    <div class="ar-count">3 / 4</div>
+    <div class="arrow-hub"><span>↓</span></div>
+    <div class="wp-card">
+      <div class="k">CURRENT WAYPOINT · 當前指令</div>
+      <div class="v">Ride in coach 2 · 向第 2 卡車廂方向走</div>
+      <div class="m">~60 m · 沿月台向車頭方向 · Coach 2 stops closest to Exit A</div>
+    </div>
+  </div>
+  <div class="bottom">
+    <div class="btn-row">
+      <div class="btn btn-primary">Next waypoint · 下一指示 →</div>
+      <div class="btn btn-secondary" style="flex:0 0 56px;width:56px;padding:0">↺</div>
+    </div>
+  </div>
+  <div class="home"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,730 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0D87C9BCB6566BA3B8CA3CFB /* MTRData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0250B448A84D15AF7A4EFCDD /* MTRData.swift */; };
+		11F12AD18544F68FB1052785 /* stations.json in Resources */ = {isa = PBXBuildFile; fileRef = 1977CDE8FD58A2D1A2B8BB96 /* stations.json */; };
+		13ED6EAB123C81445185C40C /* HeadingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BF0899845DA64DD05D0844E6 /* HeadingService.swift */; };
+		2C03526FF4E6D6B4FC114AC4 /* ExitListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6E791C552CDE289A5F7B9C06 /* ExitListView.swift */; };
+		31380337EAAF80A0B7AD72FF /* JourneyStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1380620F8AA757D8EAD2329F /* JourneyStore.swift */; };
+		31C28941800414EF97241011 /* ARGuidanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68DEE4A5819742FAA221DCB6 /* ARGuidanceView.swift */; };
+		328134105C966F59B7BE05DC /* AccessibilityView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 57F041C1441CF6093291E162 /* AccessibilityView.swift */; };
+		43F0F82D8F4CCA5211F34675 /* official_maps.json in Resources */ = {isa = PBXBuildFile; fileRef = D560EF727A342A23F97E48F4 /* official_maps.json */; };
+		48B9D9B60D4BF5027F9524AD /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 347F87B90F375F226C67B4BF /* MoreView.swift */; };
+		4F88A38BEEDC6480A0D36480 /* RecentsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4A90B8FE02F64E2615D2673D /* RecentsView.swift */; };
+		53B01799DD2880E7751490BF /* OfficialMaps.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06DFEC17224FD430E707C4D8 /* OfficialMaps.swift */; };
+		59CA1A060EDDC85A9595C191 /* MTRLiftGuideWidget.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 688BB20378D865E7F53A6E8C /* MTRLiftGuideWidget.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		5B5A04A116B70FE89E676036 /* GuidanceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */; };
+		5ECAA6CFF89E3317028B6908 /* MTRLiftGuideWidgetBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 64C14EA46844B7157676BCDF /* MTRLiftGuideWidgetBundle.swift */; };
+		5EED9AD07D1D0B43B324D8A6 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A698E6089EAD87F1961B8737 /* RootView.swift */; };
+		67C0BB80F6902AC7BBC011E5 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E14F4584AD5381AE33DED93 /* HomeView.swift */; };
+		69A91E98D50C7F7FA5482E16 /* L10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = 792C5C5BB294C92421BF4639 /* L10n.swift */; };
+		7B2E69A23D50C40C460629CA /* VoiceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A8296C0BA6C31B47D87146 /* VoiceService.swift */; };
+		8217F66FCD3F4C03640952C1 /* StationMapCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = C065A6BCFC989F89D96DF173 /* StationMapCard.swift */; };
+		822EE5C717A6941769E38C0D /* StationListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75D88084C804B18AB9244325 /* StationListView.swift */; };
+		97AD10180A11B3074CF4838E /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = B383E179774FE4EDFA97E00D /* CameraPreview.swift */; };
+		9A2973F59B22CC32EB381A9F /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB68B4A6D5953FB69B709FFD /* WeatherService.swift */; };
+		B8AC84204B884D0648486F31 /* RouteEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909A998BC443389EB2CCA0FE /* RouteEngine.swift */; };
+		CB9FE59C242D8B08694FE8F4 /* GuidanceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */; };
+		D72C4BD1C7ED3378B3A2ECF6 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31E8F94195B1F493368BF015 /* Glass.swift */; };
+		E01255829A1729014F8403A1 /* GuidanceActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9785259073DDEEFE109688F /* GuidanceActivity.swift */; };
+		E98E9D44AF2A3CD54C6BB8B5 /* RouteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0FF19C168F5C443F1CABF388 /* RouteView.swift */; };
+		EA051719D97471A2A88BBD8C /* FlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB30225A300C17CFC1A73A9D /* FlowTests.swift */; };
+		EF20A0120EA4B6ABBAE114D3 /* MTRLiftGuideApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E7BA6A1F4E1C5D374EEF256 /* MTRLiftGuideApp.swift */; };
+		A10000000000000000000008 /* Haptics.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000007 /* Haptics.swift */; };
+		A10000000000000000000006 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000005 /* Assets.xcassets */; };
+		A10000000000000000000002 /* HelpRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000001 /* HelpRequest.swift */; };
+		A10000000000000000000004 /* HelpBoardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000003 /* HelpBoardView.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		2234365C4DFF3D2D84A58E39 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C0E3EDB440BCED21FBD21902 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = D0FFF0839BF00E8923BFEFE0;
+			remoteInfo = MTRLiftGuide;
+		};
+		C435D07DDE497F7AFD1BCEB9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = C0E3EDB440BCED21FBD21902 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B29ACEBCB521E3B9BB6FA56;
+			remoteInfo = MTRLiftGuideWidget;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		66427FC8EDE2CE7B973ADCAD /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				59CA1A060EDDC85A9595C191 /* MTRLiftGuideWidget.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		0250B448A84D15AF7A4EFCDD /* MTRData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRData.swift; sourceTree = "<group>"; };
+		06DFEC17224FD430E707C4D8 /* OfficialMaps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OfficialMaps.swift; sourceTree = "<group>"; };
+		0FF19C168F5C443F1CABF388 /* RouteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteView.swift; sourceTree = "<group>"; };
+		1380620F8AA757D8EAD2329F /* JourneyStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyStore.swift; sourceTree = "<group>"; };
+		1977CDE8FD58A2D1A2B8BB96 /* stations.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = stations.json; sourceTree = "<group>"; };
+		31E8F94195B1F493368BF015 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
+		347F87B90F375F226C67B4BF /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
+		42227998465936099ACC640B /* MTRLiftGuide.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MTRLiftGuide.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4A90B8FE02F64E2615D2673D /* RecentsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecentsView.swift; sourceTree = "<group>"; };
+		4E7BA6A1F4E1C5D374EEF256 /* MTRLiftGuideApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRLiftGuideApp.swift; sourceTree = "<group>"; };
+		57F041C1441CF6093291E162 /* AccessibilityView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccessibilityView.swift; sourceTree = "<group>"; };
+		59E36A766FB68C9620291BD9 /* MTRLiftGuideUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MTRLiftGuideUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		64C14EA46844B7157676BCDF /* MTRLiftGuideWidgetBundle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MTRLiftGuideWidgetBundle.swift; sourceTree = "<group>"; };
+		688BB20378D865E7F53A6E8C /* MTRLiftGuideWidget.appex */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "wrapper.app-extension"; path = MTRLiftGuideWidget.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		68DEE4A5819742FAA221DCB6 /* ARGuidanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ARGuidanceView.swift; sourceTree = "<group>"; };
+		6E791C552CDE289A5F7B9C06 /* ExitListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExitListView.swift; sourceTree = "<group>"; };
+		75D88084C804B18AB9244325 /* StationListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationListView.swift; sourceTree = "<group>"; };
+		76A70F36AB35264EDF2379AA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		792C5C5BB294C92421BF4639 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
+		909A998BC443389EB2CCA0FE /* RouteEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteEngine.swift; sourceTree = "<group>"; };
+		9E14F4584AD5381AE33DED93 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceActivityAttributes.swift; sourceTree = "<group>"; };
+		A698E6089EAD87F1961B8737 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		B383E179774FE4EDFA97E00D /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
+		BF0899845DA64DD05D0844E6 /* HeadingService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeadingService.swift; sourceTree = "<group>"; };
+		C065A6BCFC989F89D96DF173 /* StationMapCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StationMapCard.swift; sourceTree = "<group>"; };
+		CB30225A300C17CFC1A73A9D /* FlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowTests.swift; sourceTree = "<group>"; };
+		CB68B4A6D5953FB69B709FFD /* WeatherService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherService.swift; sourceTree = "<group>"; };
+		D560EF727A342A23F97E48F4 /* official_maps.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = official_maps.json; sourceTree = "<group>"; };
+		D9785259073DDEEFE109688F /* GuidanceActivity.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceActivity.swift; sourceTree = "<group>"; };
+		D9A8296C0BA6C31B47D87146 /* VoiceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceService.swift; sourceTree = "<group>"; };
+		A10000000000000000000007 /* Haptics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Haptics.swift; sourceTree = "<group>"; };
+		A10000000000000000000005 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000001 /* HelpRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpRequest.swift; sourceTree = "<group>"; };
+		A10000000000000000000003 /* HelpBoardView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelpBoardView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		29B0CCA81463A901F039DECC = {
+			isa = PBXGroup;
+			children = (
+				9C0B4892B91A138D54A2E912 /* MTRLiftGuide */,
+				D3A3A8E68D326D0853BEE547 /* MTRLiftGuideWidget */,
+				756CF7C608FBE3F3F838F267 /* Shared */,
+				A7D0076597EE43CB19D58BB2 /* UITests */,
+				4949DF67722AD0DFB8C5370F /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		45B5C6A676868233FC3C9E4E /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				B383E179774FE4EDFA97E00D /* CameraPreview.swift */,
+				D9785259073DDEEFE109688F /* GuidanceActivity.swift */,
+				BF0899845DA64DD05D0844E6 /* HeadingService.swift */,
+				D9A8296C0BA6C31B47D87146 /* VoiceService.swift */,
+				CB68B4A6D5953FB69B709FFD /* WeatherService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		48106FF8B9FBF88F25C57082 /* Design */ = {
+			isa = PBXGroup;
+			children = (
+				31E8F94195B1F493368BF015 /* Glass.swift */,
+				A10000000000000000000007 /* Haptics.swift */,
+			);
+			path = Design;
+			sourceTree = "<group>";
+		};
+		4949DF67722AD0DFB8C5370F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				42227998465936099ACC640B /* MTRLiftGuide.app */,
+				59E36A766FB68C9620291BD9 /* MTRLiftGuideUITests.xctest */,
+				688BB20378D865E7F53A6E8C /* MTRLiftGuideWidget.appex */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4D158BAED834C11DE0CA353B /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				57F041C1441CF6093291E162 /* AccessibilityView.swift */,
+				A10000000000000000000003 /* HelpBoardView.swift */,
+				68DEE4A5819742FAA221DCB6 /* ARGuidanceView.swift */,
+				6E791C552CDE289A5F7B9C06 /* ExitListView.swift */,
+				9E14F4584AD5381AE33DED93 /* HomeView.swift */,
+				347F87B90F375F226C67B4BF /* MoreView.swift */,
+				4A90B8FE02F64E2615D2673D /* RecentsView.swift */,
+				A698E6089EAD87F1961B8737 /* RootView.swift */,
+				0FF19C168F5C443F1CABF388 /* RouteView.swift */,
+				75D88084C804B18AB9244325 /* StationListView.swift */,
+				C065A6BCFC989F89D96DF173 /* StationMapCard.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		756CF7C608FBE3F3F838F267 /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */,
+			);
+			path = Shared;
+			sourceTree = "<group>";
+		};
+		75ED015A4628274358EFD9A7 /* App */ = {
+			isa = PBXGroup;
+			children = (
+				4E7BA6A1F4E1C5D374EEF256 /* MTRLiftGuideApp.swift */,
+			);
+			path = App;
+			sourceTree = "<group>";
+		};
+		9C0B4892B91A138D54A2E912 /* MTRLiftGuide */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000005 /* Assets.xcassets */,
+				75ED015A4628274358EFD9A7 /* App */,
+				48106FF8B9FBF88F25C57082 /* Design */,
+				A691EE72449B8D6430A5EC70 /* Model */,
+				A8BEA0BAD19F7BFAA6065E67 /* Resources */,
+				45B5C6A676868233FC3C9E4E /* Services */,
+				4D158BAED834C11DE0CA353B /* Views */,
+			);
+			path = MTRLiftGuide;
+			sourceTree = "<group>";
+		};
+		A691EE72449B8D6430A5EC70 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000001 /* HelpRequest.swift */,
+				1380620F8AA757D8EAD2329F /* JourneyStore.swift */,
+				792C5C5BB294C92421BF4639 /* L10n.swift */,
+				0250B448A84D15AF7A4EFCDD /* MTRData.swift */,
+				06DFEC17224FD430E707C4D8 /* OfficialMaps.swift */,
+				909A998BC443389EB2CCA0FE /* RouteEngine.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		A7D0076597EE43CB19D58BB2 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				CB30225A300C17CFC1A73A9D /* FlowTests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
+		A8BEA0BAD19F7BFAA6065E67 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				D560EF727A342A23F97E48F4 /* official_maps.json */,
+				1977CDE8FD58A2D1A2B8BB96 /* stations.json */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		D3A3A8E68D326D0853BEE547 /* MTRLiftGuideWidget */ = {
+			isa = PBXGroup;
+			children = (
+				76A70F36AB35264EDF2379AA /* Info.plist */,
+				64C14EA46844B7157676BCDF /* MTRLiftGuideWidgetBundle.swift */,
+			);
+			path = MTRLiftGuideWidget;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0B29ACEBCB521E3B9BB6FA56 /* MTRLiftGuideWidget */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 1B2961091F6CE56851E12819 /* Build configuration list for PBXNativeTarget "MTRLiftGuideWidget" */;
+			buildPhases = (
+				335689552B5022A42A1C58FE /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MTRLiftGuideWidget;
+			packageProductDependencies = (
+			);
+			productName = MTRLiftGuideWidget;
+			productReference = 688BB20378D865E7F53A6E8C /* MTRLiftGuideWidget.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
+		BC2798142B6AC6F079AB963A /* MTRLiftGuideUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 62120C0A77884DC14512B886 /* Build configuration list for PBXNativeTarget "MTRLiftGuideUITests" */;
+			buildPhases = (
+				F831366786163CEC89CAB208 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				E88639D5DCA50F48FB2125A3 /* PBXTargetDependency */,
+			);
+			name = MTRLiftGuideUITests;
+			packageProductDependencies = (
+			);
+			productName = MTRLiftGuideUITests;
+			productReference = 59E36A766FB68C9620291BD9 /* MTRLiftGuideUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		D0FFF0839BF00E8923BFEFE0 /* MTRLiftGuide */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7CFA63C3C6B609352795EFC1 /* Build configuration list for PBXNativeTarget "MTRLiftGuide" */;
+			buildPhases = (
+				1205789AFC8901CFB110958B /* Sources */,
+				3B23C8D5DE1617A867DEBA38 /* Resources */,
+				66427FC8EDE2CE7B973ADCAD /* Embed Foundation Extensions */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				57098261285FE46BF5DE6AAF /* PBXTargetDependency */,
+			);
+			name = MTRLiftGuide;
+			packageProductDependencies = (
+			);
+			productName = MTRLiftGuide;
+			productReference = 42227998465936099ACC640B /* MTRLiftGuide.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		C0E3EDB440BCED21FBD21902 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					0B29ACEBCB521E3B9BB6FA56 = {
+						DevelopmentTeam = 47LR4272KS;
+						ProvisioningStyle = Automatic;
+					};
+					BC2798142B6AC6F079AB963A = {
+						TestTargetID = D0FFF0839BF00E8923BFEFE0;
+					};
+					D0FFF0839BF00E8923BFEFE0 = {
+						DevelopmentTeam = 47LR4272KS;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 8A6200A5F1477DDBE76EDD2C /* Build configuration list for PBXProject "MTRLiftGuide" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 29B0CCA81463A901F039DECC;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				D0FFF0839BF00E8923BFEFE0 /* MTRLiftGuide */,
+				BC2798142B6AC6F079AB963A /* MTRLiftGuideUITests */,
+				0B29ACEBCB521E3B9BB6FA56 /* MTRLiftGuideWidget */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3B23C8D5DE1617A867DEBA38 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000006 /* Assets.xcassets in Resources */,
+				43F0F82D8F4CCA5211F34675 /* official_maps.json in Resources */,
+				11F12AD18544F68FB1052785 /* stations.json in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		1205789AFC8901CFB110958B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				31C28941800414EF97241011 /* ARGuidanceView.swift in Sources */,
+				328134105C966F59B7BE05DC /* AccessibilityView.swift in Sources */,
+				97AD10180A11B3074CF4838E /* CameraPreview.swift in Sources */,
+				A10000000000000000000004 /* HelpBoardView.swift in Sources */,
+				A10000000000000000000002 /* HelpRequest.swift in Sources */,
+				2C03526FF4E6D6B4FC114AC4 /* ExitListView.swift in Sources */,
+				D72C4BD1C7ED3378B3A2ECF6 /* Glass.swift in Sources */,
+				A10000000000000000000008 /* Haptics.swift in Sources */,
+				E01255829A1729014F8403A1 /* GuidanceActivity.swift in Sources */,
+				CB9FE59C242D8B08694FE8F4 /* GuidanceActivityAttributes.swift in Sources */,
+				13ED6EAB123C81445185C40C /* HeadingService.swift in Sources */,
+				67C0BB80F6902AC7BBC011E5 /* HomeView.swift in Sources */,
+				31380337EAAF80A0B7AD72FF /* JourneyStore.swift in Sources */,
+				69A91E98D50C7F7FA5482E16 /* L10n.swift in Sources */,
+				0D87C9BCB6566BA3B8CA3CFB /* MTRData.swift in Sources */,
+				EF20A0120EA4B6ABBAE114D3 /* MTRLiftGuideApp.swift in Sources */,
+				48B9D9B60D4BF5027F9524AD /* MoreView.swift in Sources */,
+				53B01799DD2880E7751490BF /* OfficialMaps.swift in Sources */,
+				4F88A38BEEDC6480A0D36480 /* RecentsView.swift in Sources */,
+				5EED9AD07D1D0B43B324D8A6 /* RootView.swift in Sources */,
+				B8AC84204B884D0648486F31 /* RouteEngine.swift in Sources */,
+				E98E9D44AF2A3CD54C6BB8B5 /* RouteView.swift in Sources */,
+				822EE5C717A6941769E38C0D /* StationListView.swift in Sources */,
+				8217F66FCD3F4C03640952C1 /* StationMapCard.swift in Sources */,
+				7B2E69A23D50C40C460629CA /* VoiceService.swift in Sources */,
+				9A2973F59B22CC32EB381A9F /* WeatherService.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		335689552B5022A42A1C58FE /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5B5A04A116B70FE89E676036 /* GuidanceActivityAttributes.swift in Sources */,
+				5ECAA6CFF89E3317028B6908 /* MTRLiftGuideWidgetBundle.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F831366786163CEC89CAB208 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				EA051719D97471A2A88BBD8C /* FlowTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		57098261285FE46BF5DE6AAF /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0B29ACEBCB521E3B9BB6FA56 /* MTRLiftGuideWidget */;
+			targetProxy = C435D07DDE497F7AFD1BCEB9 /* PBXContainerItemProxy */;
+		};
+		E88639D5DCA50F48FB2125A3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = D0FFF0839BF00E8923BFEFE0 /* MTRLiftGuide */;
+			targetProxy = 2234365C4DFF3D2D84A58E39 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		1506BA7E0970BE65058D7556 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 47LR4272KS;
+				INFOPLIST_FILE = MTRLiftGuideWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = hk.isdn.mtrliftguide.widget;
+				PRODUCT_NAME = "MTR Lift Guide Widget";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		18070AAB9255AC738985C478 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = hk.isdn.mtrliftguide.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MTRLiftGuide;
+			};
+			name = Release;
+		};
+		2A61C0BB4F7155631495105F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		486BC314A1482FF93AF183D8 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = hk.isdn.mtrliftguide.uitests;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MTRLiftGuide;
+			};
+			name = Debug;
+		};
+		69C11263A37062E1B1B7E783 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 47LR4272KS;
+				INFOPLIST_FILE = MTRLiftGuideWidget/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = hk.isdn.mtrliftguide.widget;
+				PRODUCT_NAME = "MTR Lift Guide Widget";
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		9DB1E7933E6C95247B4588B5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_PREVIEWS = YES;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		AEED1D9374AAB1EDF7D1FC32 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 47LR4272KS;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Shows the live camera view behind the exit directions. 用於顯示出口指示的即時相機畫面。";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Used for compass direction only so the arrow can point you to the correct exit. 僅用於指南針方向，讓箭頭指向正確出口。";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_UILaunchScreenType = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = hk.isdn.mtrliftguide;
+				PRODUCT_NAME = "MTR Lift Guide";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		BC18C5888E7B52FD38724B94 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = 47LR4272KS;
+				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSCameraUsageDescription = "Shows the live camera view behind the exit directions. 用於顯示出口指示的即時相機畫面。";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "Used for compass direction only so the arrow can point you to the correct exit. 僅用於指南針方向，讓箭頭指向正確出口。";
+				INFOPLIST_KEY_NSSupportsLiveActivities = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_UILaunchScreenType = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = hk.isdn.mtrliftguide;
+				PRODUCT_NAME = "MTR Lift Guide";
+				SDKROOT = iphoneos;
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		1B2961091F6CE56851E12819 /* Build configuration list for PBXNativeTarget "MTRLiftGuideWidget" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1506BA7E0970BE65058D7556 /* Debug */,
+				69C11263A37062E1B1B7E783 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		62120C0A77884DC14512B886 /* Build configuration list for PBXNativeTarget "MTRLiftGuideUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				486BC314A1482FF93AF183D8 /* Debug */,
+				18070AAB9255AC738985C478 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7CFA63C3C6B609352795EFC1 /* Build configuration list for PBXNativeTarget "MTRLiftGuide" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AEED1D9374AAB1EDF7D1FC32 /* Debug */,
+				BC18C5888E7B52FD38724B94 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		8A6200A5F1477DDBE76EDD2C /* Build configuration list for PBXProject "MTRLiftGuide" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2A61C0BB4F7155631495105F /* Debug */,
+				9DB1E7933E6C95247B4588B5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = C0E3EDB440BCED21FBD21902 /* Project object */;
+}
