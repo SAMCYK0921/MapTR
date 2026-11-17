@@ -53,6 +53,8 @@ final class ARGuideController: NSObject, ObservableObject {
     private var cameraYaw: Float = 0
     private var elapsed: Float = 0
     private var lastAttempt: Float = -10
+    private var searchStartedAt: Float = 0
+    private var usingFallback = false
     private var running = false
     private var subscription: Cancellable?
 
@@ -136,7 +138,10 @@ final class ARGuideController: NSObject, ObservableObject {
         }
 
         if anchor == nil {
-            attemptPlacement()
+            attemptPlacement(allowFallback: true)
+        } else if usingFallback {
+            // Keep trying to swap the estimated spot for a real floor hit.
+            attemptPlacement(allowFallback: false)
         }
 
         guard let arrow else { return }
@@ -177,8 +182,10 @@ final class ARGuideController: NSObject, ObservableObject {
         }
         anchor = nil
         arrow = nil
+        usingFallback = false
         planeNormal = SIMD3<Float>(0, 1, 0)
         lastAttempt = -10
+        searchStartedAt = elapsed
         status = .searching
     }
 
@@ -187,17 +194,16 @@ final class ARGuideController: NSObject, ObservableObject {
     /// Raycasts a few screen points until the floor (or a wall) in front of the
     /// user is found, then anchors the arrow there. Points below the centre aim
     /// the ray at the floor; the centre point catches walls.
-    private func attemptPlacement() {
+    private func attemptPlacement(allowFallback: Bool) {
         let bounds = arView.bounds
         guard bounds.width > 0, bounds.height > 0 else { return }
         guard elapsed - lastAttempt > 0.1 else { return }
         lastAttempt = elapsed
         guard let frame = arView.session.currentFrame else { return }
 
-        let cameraPosition = SIMD3<Float>(
-            frame.camera.transform.columns.3.x,
-            frame.camera.transform.columns.3.y,
-            frame.camera.transform.columns.3.z)
+        let columns = frame.camera.transform.columns
+        let cameraPosition = SIMD3<Float>(columns.3.x, columns.3.y, columns.3.z)
+        let forward = SIMD3<Float>(-columns.2.x, 0, -columns.2.z)
 
         let probes = [
             CGPoint(x: bounds.midX, y: bounds.height * 0.78),
@@ -213,7 +219,7 @@ final class ARGuideController: NSObject, ObservableObject {
             let position = SIMD3<Float>(
                 transform.columns.3.x, transform.columns.3.y, transform.columns.3.z)
             let distance = simd_length(position - cameraPosition)
-            guard distance > 0.5, distance < 9 else { continue }
+            guard distance > 0.5, distance < 12 else { continue }
 
             var normal = simd_normalize(SIMD3<Float>(
                 transform.columns.1.x, transform.columns.1.y, transform.columns.1.z))
@@ -222,12 +228,28 @@ final class ARGuideController: NSObject, ObservableObject {
             }
 
             place(at: position, normal: normal,
-                  alignment: abs(normal.y) > 0.72 ? .floor : .wall)
+                  alignment: abs(normal.y) > 0.72 ? .floor : .wall,
+                  fallback: false)
             return
+        }
+
+        // Nothing recognisable yet (big open concourse, phone held level) —
+        // drop a provisional arrow on the estimated floor so guidance still shows.
+        if allowFallback, elapsed - searchStartedAt > 2.0 {
+            let direction = simd_length(forward) < 0.001 ? SIMD3<Float>(0, 0, 1) : simd_normalize(forward)
+            let position = cameraPosition + direction * 1.6 - SIMD3<Float>(0, 1.45, 0)
+            place(at: position, normal: SIMD3<Float>(0, 1, 0), alignment: .floor, fallback: true)
         }
     }
 
-    private func place(at position: SIMD3<Float>, normal: SIMD3<Float>, alignment: Alignment) {
+    private func place(
+        at position: SIMD3<Float>,
+        normal: SIMD3<Float>,
+        alignment: Alignment,
+        fallback: Bool
+    ) {
+        clearArrow()
+
         var world = matrix_identity_float4x4
         world.columns.3 = SIMD4<Float>(position + normal * 0.012, 1)
 
@@ -241,6 +263,7 @@ final class ARGuideController: NSObject, ObservableObject {
         self.anchor = anchor
         self.arrow = arrow
         self.planeNormal = normal
+        self.usingFallback = fallback
         self.status = .placed(alignment)
     }
 
