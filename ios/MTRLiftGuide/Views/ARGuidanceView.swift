@@ -32,6 +32,8 @@ struct ARGuidanceView: View {
     @State private var lastSpokenAt = Date.distantPast
     /// Session coins already credited to the wallet.
     @State private var reportedCoins = 0
+    /// Verbatim copy of the last announcement, for the replay button.
+    @State private var lastSpokenScript: SpokenGuide.Script?
 
     /// World tracking needs a real sensor stack; the simulator falls back to the
     /// plain camera feed with the compass overlay.
@@ -71,9 +73,9 @@ struct ARGuidanceView: View {
 
             overlay
         }
-        .navigationTitle(Text(lang.t("AR 實景導航", "AR guidance")))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(.hidden, for: .navigationBar)
+        // Immersive: no navigation bar at all, the floating xmark and the pills
+        // are the only chrome (and the only way out).
+        .toolbar(.hidden, for: .navigationBar)
         .task {
             heading.request()
             startLiveActivity()
@@ -124,8 +126,13 @@ struct ARGuidanceView: View {
 
     private var overlay: some View {
         VStack {
-            progressPill
-                .padding(.top, 8)
+            HStack(alignment: .top, spacing: 10) {
+                exitButton
+                Spacer(minLength: 8)
+                progressPill
+            }
+            .padding(.top, 8)
+
             if supportsAR, arGuide.failure == nil, arGuide.status == .searching {
                 arHintPill
                     .padding(.top, 6)
@@ -142,6 +149,21 @@ struct ARGuidanceView: View {
         }
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
+    }
+
+    /// Standalone way out of AR, independent of the waypoint controls.
+    private var exitButton: some View {
+        Button {
+            Haptics.tap()
+            restartJourney()
+        } label: {
+            Image(systemName: "xmark")
+                .font(.system(size: 16, weight: .bold))
+                .foregroundStyle(.white)
+                .frame(width: 44, height: 44)
+        }
+        .glassButton(cornerRadius: 22)
+        .accessibilityLabel(Text(lang.t("退出導航", "Exit guidance")))
     }
 
     private var progressPill: some View {
@@ -285,26 +307,16 @@ struct ARGuidanceView: View {
                 }
 
                 Button {
-                    restartJourney()
+                    Haptics.selection()
+                    replayLastSpoken()
                 } label: {
                     Image(systemName: "arrow.counterclockwise")
                         .font(.system(size: 18, weight: .semibold))
                 }
                 .frame(width: 56, height: 54)
                 .glassButton()
-                .accessibilityLabel(Text(lang.t("重新開始", "Restart")))
+                .accessibilityLabel(Text(lang.t("重播上一段語音", "Replay last announcement")))
             }
-
-            Button {
-                if voice.isSpeaking { voice.stop() } else { speakCurrent() }
-            } label: {
-                Label(voice.isSpeaking ? lang.t("停止語音", "Stop voice")
-                      : lang.t("重播語音", "Repeat voice"),
-                      systemImage: voice.isSpeaking ? "stop.fill" : "speaker.wave.2.fill")
-                    .font(.subheadline.weight(.semibold))
-            }
-            .frame(height: 44)
-            .glassButton(cornerRadius: 16)
         }
     }
 
@@ -419,6 +431,7 @@ struct ARGuidanceView: View {
             heading: heading.trueHeading,
             headingAvailable: heading.isHeadingAvailable)
         voice.speak(script.zh, script.en)
+        lastSpokenScript = script
         lastSpokenAt = Date()
     }
 
@@ -430,8 +443,21 @@ struct ARGuidanceView: View {
         guard let script = SpokenGuide.correction(
             heading: heading.trueHeading, target: target) else { return }
         voice.speak(script.zh, script.en)
+        lastSpokenScript = script
         lastSpokenAt = Date()
         Haptics.selection()
+    }
+
+    /// Round replay button: repeats exactly what was said last, correction
+    /// included, rather than re-reading the step.
+    private func replayLastSpoken() {
+        guard let script = lastSpokenScript else {
+            speakCurrent()
+            return
+        }
+        voice.stop()
+        voice.speak(script.zh, script.en)
+        lastSpokenAt = Date()
     }
 
     // MARK: - Live Activity (Dynamic Island)

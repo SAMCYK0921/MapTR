@@ -50,8 +50,8 @@ struct HomeView: View {
                 if let station, let exit {
                     stationCard(station)
                     helpEntryCard(station)
-                    StationMapCard(station: station, onLocate: onStartAR)
                     destinationCard(station, exit)
+                    StationMapCard(station: station, onLocate: onStartAR)
                     recentsRow(station)
                 } else {
                     emptyCard
