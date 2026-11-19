@@ -31,6 +31,7 @@
 		A7C41E0B9D5F42C6B8A31D07 /* ARGuideScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2F8B64A1D7E4F03A9B5C81E /* ARGuideScene.swift */; };
 		9A2973F59B22CC32EB381A9F /* WeatherService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB68B4A6D5953FB69B709FFD /* WeatherService.swift */; };
 		B8AC84204B884D0648486F31 /* RouteEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909A998BC443389EB2CCA0FE /* RouteEngine.swift */; };
+		B4D2E8F1A6C39D5E7F0B2C48 /* SpokenGuide.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F3A7C2D1B85E604A3C9F71 /* SpokenGuide.swift */; };
 		CB9FE59C242D8B08694FE8F4 /* GuidanceActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */; };
 		D72C4BD1C7ED3378B3A2ECF6 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31E8F94195B1F493368BF015 /* Glass.swift */; };
 		E01255829A1729014F8403A1 /* GuidanceActivity.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9785259073DDEEFE109688F /* GuidanceActivity.swift */; };
@@ -95,6 +96,7 @@
 		76A70F36AB35264EDF2379AA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		792C5C5BB294C92421BF4639 /* L10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = L10n.swift; sourceTree = "<group>"; };
 		909A998BC443389EB2CCA0FE /* RouteEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RouteEngine.swift; sourceTree = "<group>"; };
+		E9F3A7C2D1B85E604A3C9F71 /* SpokenGuide.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpokenGuide.swift; sourceTree = "<group>"; };
 		9E14F4584AD5381AE33DED93 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		9E422F3F0682C4182FB8A63C /* GuidanceActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GuidanceActivityAttributes.swift; sourceTree = "<group>"; };
 		A698E6089EAD87F1961B8737 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -214,6 +216,7 @@
 				0250B448A84D15AF7A4EFCDD /* MTRData.swift */,
 				06DFEC17224FD430E707C4D8 /* OfficialMaps.swift */,
 				909A998BC443389EB2CCA0FE /* RouteEngine.swift */,
+				E9F3A7C2D1B85E604A3C9F71 /* SpokenGuide.swift */,
 			);
 			path = Model;
 			sourceTree = "<group>";
@@ -385,6 +388,7 @@
 				4F88A38BEEDC6480A0D36480 /* RecentsView.swift in Sources */,
 				5EED9AD07D1D0B43B324D8A6 /* RootView.swift in Sources */,
 				B8AC84204B884D0648486F31 /* RouteEngine.swift in Sources */,
+				B4D2E8F1A6C39D5E7F0B2C48 /* SpokenGuide.swift in Sources */,
 				E98E9D44AF2A3CD54C6BB8B5 /* RouteView.swift in Sources */,
 				822EE5C717A6941769E38C0D /* StationListView.swift in Sources */,
 				8217F66FCD3F4C03640952C1 /* StationMapCard.swift in Sources */,

@@ -70,7 +70,7 @@ struct RouteView: View {
                     if voice.isSpeaking {
                         voice.stop()
                     } else {
-                        voice.speakRoute(waypoints)
+                        speakRouteOverview()
                     }
                 } label: {
                     Label(voice.isSpeaking ? lang.t("停止語音導航", "Stop voice guidance")
@@ -94,6 +94,14 @@ struct RouteView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { journey.record(station: station, exit: exit, mode: mode) }
         .onDisappear { voice.stop() }
+    }
+
+    /// Spoken summary built for listening, not for reading the timeline.
+    private func speakRouteOverview() {
+        guard let line else { return }
+        let script = SpokenGuide.overview(
+            waypoints: waypoints, line: line, station: station, exit: exit, mode: mode)
+        voice.speak(script.zh, script.en)
     }
 }
 

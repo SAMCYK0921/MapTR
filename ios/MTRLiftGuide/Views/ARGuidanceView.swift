@@ -27,6 +27,8 @@ struct ARGuidanceView: View {
     @StateObject private var voice = VoiceService()
     @State private var index = 0
     @State private var lastDirectionSymbol = ""
+    @State private var gameMode = false
+    @State private var lastSpokenAt = Date.distantPast
 
     /// World tracking needs a real sensor stack; the simulator falls back to the
     /// plain camera feed with the compass overlay.
@@ -84,11 +86,19 @@ struct ARGuidanceView: View {
         .onChange(of: heading.trueHeading) { _ in
             updateDirectionInLiveActivity()
             arGuide.setHeading(heading.trueHeading, available: heading.isHeadingAvailable)
+            announceCorrectionIfNeeded()
         }
         // Compass permission can arrive after the screen appears; without this
         // the AR arrow would never learn that heading input became available.
         .onChange(of: heading.isHeadingAvailable) { _, available in
             arGuide.setHeading(heading.trueHeading, available: available)
+        }
+        .onChange(of: gameMode) { _, enabled in
+            arGuide.setGameMode(enabled)
+        }
+        .onChange(of: arGuide.coinsCollected) { _, count in
+            guard gameMode, count > 0 else { return }
+            if count % 4 == 0 { Haptics.success() }
         }
         .onDisappear {
             camera.stop()
@@ -106,6 +116,10 @@ struct ARGuidanceView: View {
                 .padding(.top, 8)
             if supportsAR, arGuide.failure == nil, arGuide.status == .searching {
                 arHintPill
+                    .padding(.top, 6)
+            }
+            if supportsAR, gameMode, arGuide.failure == nil {
+                coinPill
                     .padding(.top, 6)
             }
             Spacer()
@@ -156,6 +170,31 @@ struct ARGuidanceView: View {
         .glassSurface(cornerRadius: 18, tint: .black)
     }
 
+    /// Coin progress while the game mode is on.
+    private var coinPill: some View {
+        HStack(spacing: 6) {
+            Image(systemName: "circle.fill")
+                .font(.system(size: 9))
+                .foregroundStyle(Color(red: 1.0, green: 0.79, blue: 0.35))
+            Text(lang.t("金幣 \(arGuide.coinsCollected)", "Coins \(arGuide.coinsCollected)"))
+                .font(.caption.weight(.semibold))
+                .contentTransition(.numericText())
+            if arGuide.coinsRemaining > 0 {
+                Text("·")
+                    .foregroundStyle(.white.opacity(0.35))
+                Text(lang.t("剩 \(arGuide.coinsRemaining)", "\(arGuide.coinsRemaining) left"))
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(.white.opacity(0.75))
+                    .contentTransition(.numericText())
+            }
+        }
+        .foregroundStyle(.white)
+        .padding(.horizontal, 12)
+        .padding(.vertical, 7)
+        .glassSurface(cornerRadius: 18, tint: .black)
+        .animation(.snappy(duration: 0.25), value: arGuide.coinsCollected)
+    }
+
     private func waypointCard(_ wp: Waypoint) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
@@ -198,6 +237,21 @@ struct ARGuidanceView: View {
                 }
                 .buttonStyle(PrimaryButtonStyle())
                 .frame(maxWidth: .infinity)
+
+                if supportsAR {
+                    Button {
+                        Haptics.selection()
+                        gameMode.toggle()
+                    } label: {
+                        Image(systemName: gameMode ? "gamecontroller.fill" : "gamecontroller")
+                            .font(.system(size: 18, weight: .semibold))
+                    }
+                    .frame(width: 56, height: 54)
+                    .glassButton()
+                    .accessibilityLabel(Text(lang.t(
+                        gameMode ? "關閉遊戲模式" : "開啟遊戲模式",
+                        gameMode ? "Turn off game mode" : "Turn on game mode")))
+                }
 
                 if supportsAR {
                     Button {
@@ -333,10 +387,33 @@ struct ARGuidanceView: View {
         return RouteEngine.turnHint(deviceHeading: heading.trueHeading, target: target)
     }
 
+    /// Narrates the current step from a screen-free script: distances in steps,
+    /// turns in degrees, physical cues — never "look for the sign".
     private func speakCurrent() {
-        guard let current else { return }
-        voice.speak(current.titleZh + "。" + current.descZh,
-                    current.titleEn + ". " + current.descEn)
+        guard !waypoints.isEmpty, let line = network.primaryLine(for: station) else { return }
+        let script = SpokenGuide.step(
+            index: index,
+            waypoints: waypoints,
+            line: line,
+            station: station,
+            exit: exit,
+            mode: mode,
+            heading: heading.trueHeading,
+            headingAvailable: heading.isHeadingAvailable)
+        voice.speak(script.zh, script.en)
+        lastSpokenAt = Date()
+    }
+
+    /// Gentle course correction while walking, throttled so it never talks over
+    /// the step narration or nags on every compass tick.
+    private func announceCorrectionIfNeeded() {
+        guard heading.isHeadingAvailable, !voice.isSpeaking else { return }
+        guard Date().timeIntervalSince(lastSpokenAt) > 8 else { return }
+        guard let script = SpokenGuide.correction(
+            heading: heading.trueHeading, target: target) else { return }
+        voice.speak(script.zh, script.en)
+        lastSpokenAt = Date()
+        Haptics.selection()
     }
 
     // MARK: - Live Activity (Dynamic Island)
@@ -349,7 +426,7 @@ struct ARGuidanceView: View {
     /// Compass direction relative to the target bearing.
     private var direction: (symbol: String, text: String) {
         guard heading.isHeadingAvailable else {
-            return ("arrow.up", lang.t("跟隨下方指示", "Follow directions"))
+            return ("arrow.up", lang.t("跟隨語音前進", "Follow the voice"))
         }
         let h = RouteEngine.turnHint(deviceHeading: heading.trueHeading, target: target)
         return (h.symbol, lang.t(h.zh, h.en))

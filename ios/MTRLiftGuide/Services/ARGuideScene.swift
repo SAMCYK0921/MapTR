@@ -3,10 +3,12 @@
 //  MTR Lift Guide
 //
 //  Real augmented reality for the guidance screen. An ARKit world-tracking
-//  session maps the station floor / walls, and a RealityKit arrow is anchored
-//  onto whichever surface is in front of the phone. The arrow always points at
-//  the compass bearing of the current waypoint, so it stays pinned to the real
-//  world while the phone turns — instead of being a 2D sticker over the feed.
+//  session maps the station floor / walls, and a RealityKit marker is anchored
+//  onto whichever surface is in front of the phone.
+//
+//  Two visual modes share the same anchoring:
+//    • guide — a slim arrow with a flowing trail of dashes;
+//    • game  — a line of coins to walk through, popped one by one.
 //
 
 import ARKit
@@ -16,10 +18,10 @@ import SwiftUI
 import UIKit
 import simd
 
-/// Owns the `ARView`, its session and the anchored arrow.
+/// Owns the `ARView`, its session and the anchored content.
 final class ARGuideController: NSObject, ObservableObject {
 
-    /// Which surface the arrow landed on.
+    /// Which surface the marker landed on.
     enum Alignment: Equatable {
         case floor
         case wall
@@ -39,11 +41,22 @@ final class ARGuideController: NSObject, ObservableObject {
 
     @Published private(set) var status: Status = .idle
     @Published private(set) var failure: Failure?
+    @Published private(set) var gameMode = false
+    @Published private(set) var coinsCollected = 0
+    @Published private(set) var coinsRemaining = 0
 
     let arView: ARView
 
-    private var anchor: AnchorEntity?
-    private var arrow: Entity?
+    /// Everything that hangs off the current anchor.
+    private struct Assembly {
+        let anchor: AnchorEntity
+        let root: Entity
+        let body: Entity
+        let flow: [Entity]
+        let coins: [ModelEntity]
+    }
+
+    private var assembly: Assembly?
     private var planeNormal = SIMD3<Float>(0, 1, 0)
 
     private var targetBearing: Double = 0
@@ -55,10 +68,14 @@ final class ARGuideController: NSObject, ObservableObject {
     private var turnRate: Float = 0
     private var compassOffset: Float?
     private var frozenYaw: Float?
+
     private var elapsed: Float = 0
+    private var assemblyAge: Float = 0
     private var lastAttempt: Float = -10
     private var searchStartedAt: Float = 0
     private var usingFallback = false
+    private var coinPickups: [ObjectIdentifier: Float] = [:]
+
     private var running = false
     private var subscription: Cancellable?
 
@@ -76,7 +93,7 @@ final class ARGuideController: NSObject, ObservableObject {
     // MARK: - Lifecycle
 
     /// World tracking with floors and walls enabled; scene depth (LiDAR) is
-    /// added when the device supports it so the arrow hides behind furniture.
+    /// added when the device supports it so the marker hides behind furniture.
     private func makeConfiguration() -> ARWorldTrackingConfiguration {
         let configuration = ARWorldTrackingConfiguration()
         configuration.planeDetection = [.horizontal, .vertical]
@@ -93,7 +110,7 @@ final class ARGuideController: NSObject, ObservableObject {
             return
         }
 
-        clearArrow()
+        clearAssembly()
         resetCompassCalibration()
         failure = nil
         running = true
@@ -105,13 +122,13 @@ final class ARGuideController: NSObject, ObservableObject {
         arView.session.pause()
     }
 
-    /// Drop the current arrow and map the surroundings again.
+    /// Drop the marker and map the surroundings again.
     func recenter() {
         guard running else {
             start()
             return
         }
-        clearArrow()
+        clearAssembly()
         resetCompassCalibration()
         failure = nil
         arView.session.run(makeConfiguration(), options: [.resetTracking, .removeExistingAnchors])
@@ -137,11 +154,24 @@ final class ARGuideController: NSObject, ObservableObject {
         headingAvailable = available
     }
 
+    /// Swaps between the arrow and the coin trail. Re-anchoring keeps the new
+    /// content where the user is actually looking.
+    func setGameMode(_ enabled: Bool) {
+        guard enabled != gameMode else { return }
+        gameMode = enabled
+        coinsCollected = 0
+        coinsRemaining = 0
+        if assembly != nil {
+            clearAssembly()
+        }
+    }
+
     // MARK: - Frame loop
 
     private func tick(deltaTime: Float) {
         guard running else { return }
         elapsed += deltaTime
+        assemblyAge += deltaTime
 
         if let frame = arView.session.currentFrame {
             let columns = frame.camera.transform.columns
@@ -159,29 +189,94 @@ final class ARGuideController: NSObject, ObservableObject {
                 cameraPosition: SIMD3<Float>(columns.3.x, columns.3.y, columns.3.z))
         }
 
-        if anchor == nil {
+        if assembly == nil {
             attemptPlacement(allowFallback: true)
         } else if usingFallback {
             // Keep trying to swap the estimated spot for a real floor hit.
             attemptPlacement(allowFallback: false)
         }
 
-        guard let arrow else { return }
+        guard let assembly else { return }
 
+        updateOrientation(of: assembly, deltaTime: deltaTime)
+        updateMotion(of: assembly)
+        if !assembly.coins.isEmpty {
+            updateCoins(assembly, deltaTime: deltaTime)
+        }
+    }
+
+    /// The marker stays pinned to one spot in the room; only its facing
+    /// follows the target bearing.
+    private func updateOrientation(of assembly: Assembly, deltaTime: Float) {
         let travel = Self.travelDirection(yaw: currentYaw())
         let desired = Self.orientation(normal: planeNormal, travel: travel)
         let blend = min(1, max(0.08, deltaTime * 6))
-        arrow.orientation = simd_slerp(arrow.orientation, desired, blend)
+        assembly.root.orientation = simd_slerp(assembly.root.orientation, desired, blend)
+    }
 
-        let pulse = 1 + 0.03 * Float(sin(Double(elapsed) * 2.4))
-        arrow.scale = SIMD3<Float>(repeating: pulse)
+    /// Minimal motion: a slow float on the whole marker, a wave running through
+    /// the trail, and a soft scale-in when the anchor first lands.
+    private func updateMotion(of assembly: Assembly) {
+        let entrance = min(1, 0.84 + assemblyAge * 1.6)
+        assembly.root.scale = SIMD3<Float>(repeating: entrance)
+
+        let float = 0.003 + 0.003 * Float(sin(Double(elapsed) * 1.7))
+        assembly.root.position = SIMD3<Float>(0, float, 0)
+
+        for (index, node) in assembly.flow.enumerated() {
+            let phase = Double(elapsed) * 1.9 - Double(index) * 0.85
+            let wave = 0.78 + 0.22 * (sin(phase) * 0.5 + 0.5)
+            node.scale = SIMD3<Float>(repeating: Float(wave))
+            node.position.y = 0.004 + 0.004 * Float(max(0, sin(phase)))
+        }
+    }
+
+    /// Spins the coins, pops the ones the user walks into, and lays down a new
+    /// trail once the line is cleared.
+    private func updateCoins(_ assembly: Assembly, deltaTime: Float) {
+        guard let frame = arView.session.currentFrame else { return }
+        let columns = frame.camera.transform.columns
+        let camera = SIMD3<Float>(columns.3.x, columns.3.y, columns.3.z)
+
+        for (index, coin) in assembly.coins.enumerated() where coin.parent != nil {
+            let key = ObjectIdentifier(coin)
+
+            if let pickedAt = coinPickups[key] {
+                let progress = (elapsed - pickedAt) / 0.26
+                if progress >= 1 {
+                    coin.removeFromParent()
+                    coinPickups.removeValue(forKey: key)
+                } else {
+                    let pop = 1 + 1.6 * progress
+                    coin.scale = SIMD3<Float>(repeating: max(0.001, pop * (1 - progress)))
+                    coin.position.y += deltaTime * 1.5
+                }
+                continue
+            }
+
+            // Tilt first, then spin about the vertical axis so the face sweeps.
+            coin.orientation = simd_quatf(
+                angle: elapsed * 2.1 + Float(index), axis: SIMD3<Float>(0, 1, 0)) * Self.coinTilt
+
+            let world = coin.position(relativeTo: nil)
+            let flat = SIMD3<Float>(world.x - camera.x, 0, world.z - camera.z)
+            if simd_length(flat) < 0.55, abs(world.y - camera.y) < 1.6 {
+                coinPickups[key] = elapsed
+                coinsCollected += 1
+                coinsRemaining = max(0, coinsRemaining - 1)
+                Haptics.impact(.rigid)
+            }
+        }
+
+        if coinsRemaining == 0, coinPickups.isEmpty, coinsCollected > 0 {
+            // Whole line cleared — drop a fresh trail further along.
+            clearAssembly()
+        }
     }
 
     /// Keeps a slowly-smoothed mapping between ARKit's world yaw and the
     /// compass. Turning the phone moves both at the same time, so the offset
-    /// stays put and the arrow keeps pointing at the same spot in the room —
-    /// previously the two inputs were mixed per-frame, so any compass lag made
-    /// the arrow swing with the phone.
+    /// stays put and the marker keeps pointing at the same spot in the room.
     private func updateCompassOffset() {
         guard headingAvailable else { return }
         // Freeze calibration while the phone is sweeping: the compass lags the
@@ -195,7 +290,6 @@ final class ARGuideController: NSObject, ObservableObject {
             return
         }
 
-        // Low gain: converges while standing still, ignores compass jitter.
         compassOffset = current + shortestAngle(raw - current) * 0.02
     }
 
@@ -215,31 +309,32 @@ final class ARGuideController: NSObject, ObservableObject {
             return frozen
         }
         // No compass yet: point along the view direction once and freeze, so
-        // the arrow still sits still in the world instead of chasing the phone.
+        // the marker still sits still in the world instead of chasing the phone.
         frozenYaw = cameraYaw
         return cameraYaw
     }
 
-    /// Drops the arrow once the user has walked past it (or moved far away) so
+    /// Drops the marker once the user has walked past it (or moved far away) so
     /// the next placement lands on the floor ahead again.
     private func recycleIfBehind(forward: SIMD3<Float>, cameraPosition: SIMD3<Float>) {
-        guard let anchor else { return }
-        let offset = anchor.position(relativeTo: nil) - cameraPosition
+        guard let assembly else { return }
+        let offset = assembly.anchor.position(relativeTo: nil) - cameraPosition
         let flat = SIMD3<Float>(offset.x, 0, offset.z)
         let length = simd_length(flat)
         guard length > 0.3 else { return }
         let facing = simd_dot(simd_normalize(flat), simd_normalize(forward))
         if facing < 0.1 || simd_length(offset) > 6 {
-            clearArrow()
+            clearAssembly()
         }
     }
 
-    private func clearArrow() {
-        if let anchor {
-            arView.scene.removeAnchor(anchor)
+    private func clearAssembly() {
+        if let assembly {
+            arView.scene.removeAnchor(assembly.anchor)
         }
-        anchor = nil
-        arrow = nil
+        assembly = nil
+        coinPickups.removeAll()
+        coinsRemaining = 0
         usingFallback = false
         planeNormal = SIMD3<Float>(0, 1, 0)
         lastAttempt = -10
@@ -250,8 +345,8 @@ final class ARGuideController: NSObject, ObservableObject {
     // MARK: - Placement
 
     /// Raycasts a few screen points until the floor (or a wall) in front of the
-    /// user is found, then anchors the arrow there. Points below the centre aim
-    /// the ray at the floor; the centre point catches walls.
+    /// user is found, then anchors the content there. Points below the centre
+    /// aim the ray at the floor; the centre point catches walls.
     private func attemptPlacement(allowFallback: Bool) {
         let bounds = arView.bounds
         guard bounds.width > 0, bounds.height > 0 else { return }
@@ -292,7 +387,7 @@ final class ARGuideController: NSObject, ObservableObject {
         }
 
         // Nothing recognisable yet (big open concourse, phone held level) —
-        // drop a provisional arrow on the estimated floor so guidance still shows.
+        // drop a provisional marker on the estimated floor so guidance still shows.
         if allowFallback, elapsed - searchStartedAt > 2.0 {
             let direction = simd_length(forward) < 0.001 ? SIMD3<Float>(0, 0, 1) : simd_normalize(forward)
             let position = cameraPosition + direction * 1.6 - SIMD3<Float>(0, 1.45, 0)
@@ -306,26 +401,67 @@ final class ARGuideController: NSObject, ObservableObject {
         alignment: Alignment,
         fallback: Bool
     ) {
-        clearArrow()
+        clearAssembly()
 
         var world = matrix_identity_float4x4
         world.columns.3 = SIMD4<Float>(position + normal * 0.012, 1)
 
         let anchor = AnchorEntity(world: world)
-        let arrow = Self.makeArrow()
-        arrow.orientation = Self.orientation(
-            normal: normal, travel: Self.travelDirection(yaw: currentYaw()))
-        anchor.addChild(arrow)
+        let content = makeContent()
+        anchor.addChild(content.root)
         arView.scene.addAnchor(anchor)
 
-        self.anchor = anchor
-        self.arrow = arrow
-        self.planeNormal = normal
-        self.usingFallback = fallback
-        self.status = .placed(alignment)
+        assembly = Assembly(
+            anchor: anchor,
+            root: content.root,
+            body: content.body,
+            flow: content.flow,
+            coins: content.coins)
+        planeNormal = normal
+        usingFallback = fallback
+        assemblyAge = 0
+        coinsRemaining = content.coins.count
+        status = .placed(alignment)
     }
 
-    // MARK: - Geometry helpers
+    // MARK: - Content
+
+    private func makeContent() -> (root: Entity, body: Entity, flow: [Entity], coins: [ModelEntity]) {
+        let root = Entity()
+
+        if gameMode {
+            // Minimal coin line: walk through them, they pop.
+            var coins: [ModelEntity] = []
+            for index in 0..<8 {
+                let coin = ModelEntity(mesh: Self.coinMesh, materials: [Self.coinMaterial()])
+                coin.position = SIMD3<Float>(0, 0.32, 0.55 + Float(index) * 0.55)
+                coin.orientation = Self.coinTilt
+                root.addChild(coin)
+                coins.append(coin)
+            }
+            return (root, Entity(), [], coins)
+        }
+
+        let body = Entity()
+        let material = Self.arrowMaterial()
+        body.addChild(ModelEntity(mesh: Self.arrowHeadMesh, materials: [material]))
+        let tail = ModelEntity(mesh: Self.arrowTailMesh, materials: [material])
+        // Sunk a hair so the head wins the shared area without z-fighting.
+        tail.position = SIMD3<Float>(0, -0.001, 0)
+        body.addChild(tail)
+        root.addChild(body)
+
+        var flow: [Entity] = []
+        for index in 0..<3 {
+            let dash = ModelEntity(mesh: Self.dashMesh, materials: [Self.dashMaterial()])
+            dash.position = SIMD3<Float>(0, 0.004, 1.04 + Float(index) * 0.32)
+            root.addChild(dash)
+            flow.append(dash)
+        }
+        return (root, body, flow, [])
+    }
+
+    // MARK: - Geometry
 
     private static func travelDirection(yaw: Float) -> SIMD3<Float> {
         SIMD3<Float>(Float(sin(Double(yaw))), 0, Float(cos(Double(yaw))))
@@ -347,66 +483,78 @@ final class ARGuideController: NSObject, ObservableObject {
         return simd_quatf(simd_float3x3(columns: (right, up, forward)))
     }
 
-    /// Flat arrow lying in the entity's local XZ plane, tip pointing +Z.
-    /// Rounded silhouette with real thickness, plus a shrinking trail of arrows
-    /// so the direction reads as a path instead of a pasted sticker.
-    private static func makeArrow() -> Entity {
-        let root = Entity()
-        root.addChild(arrowBody(tint: arrowRed))
+    private static let tiltAxis = SIMD3<Float>(1, 0, 0)
+    private static let coinTilt = simd_quatf(angle: .pi / 2, axis: tiltAxis)
 
-        for index in 0..<3 {
-            let trail = arrowBody(tint: arrowTrailTint)
-            trail.scale = SIMD3<Float>(repeating: 0.34 - Float(index) * 0.06)
-            trail.position = SIMD3<Float>(0, 0, 1.16 + Float(index) * 0.36)
-            root.addChild(trail)
-        }
-
-        return root
-    }
-
-    /// Rounded head + capsule tail forming one soft silhouette.
-    private static func arrowBody(tint: UIColor) -> Entity {
-        let body = Entity()
-        let material = arrowMaterial(tint: tint)
-
-        body.addChild(ModelEntity(mesh: arrowHeadMesh, materials: [material]))
-
-        let shaft = ModelEntity(mesh: arrowShaftMesh, materials: [material])
-        // Sunk a hair so the head's top face always wins the shared area.
-        shaft.position = SIMD3<Float>(0, -0.002, 0)
-        body.addChild(shaft)
-
-        return body
-    }
-
-    private static let arrowRed = UIColor(red: 0.90, green: 0.11, blue: 0.24, alpha: 1)
-    private static let arrowTrailTint = UIColor(red: 0.95, green: 0.38, blue: 0.45, alpha: 1)
-
-    /// Triangle head with every corner rounded off.
+    /// Slim arrow built from two convex plates: a rounded triangle head and a
+    /// capsule tail (fan triangulation only works on convex outlines).
     private static let arrowHeadMesh = extruded(
         outline: roundedOutline(
-            [SIMD2(-0.32, 0.44), SIMD2(0.32, 0.44), SIMD2(0.00, 0.98)],
-            radius: 0.09),
-        thickness: 0.03)
+            [SIMD2(-0.26, 0.42), SIMD2(0.26, 0.42), SIMD2(0.00, 0.86)],
+            radius: 0.07),
+        thickness: 0.008)
 
-    /// Capsule shaft: a rounded rectangle, so there are no sharp corners at all.
-    private static let arrowShaftMesh = extruded(
+    private static let arrowTailMesh = extruded(
         outline: roundedOutline(
-            [SIMD2(-0.13, 0.00), SIMD2(0.13, 0.00), SIMD2(0.13, 0.46), SIMD2(-0.13, 0.46)],
-            radius: 0.11),
-        thickness: 0.03)
+            [SIMD2(-0.10, 0.00), SIMD2(0.10, 0.00), SIMD2(0.10, 0.44), SIMD2(-0.10, 0.44)],
+            radius: 0.09),
+        thickness: 0.008)
 
-    /// Solid, light-reactive red so the arrow picks up the station lighting
-    /// instead of looking like a flat cut-out.
-    private static func arrowMaterial(tint: UIColor) -> PhysicallyBasedMaterial {
+    /// Short capsule used for the flowing trail.
+    private static let dashMesh = extruded(
+        outline: roundedOutline(
+            [SIMD2(-0.05, 0.00), SIMD2(0.05, 0.00), SIMD2(0.05, 0.17), SIMD2(-0.05, 0.17)],
+            radius: 0.045),
+        thickness: 0.006)
+
+    /// Coin as a thin disc (cylinders need iOS 18, so the disc is extruded).
+    private static let coinMesh = extruded(
+        outline: discOutline(radius: 0.082, segments: 28),
+        thickness: 0.012)
+
+    private static func discOutline(radius: Float, segments: Int) -> [SIMD2<Float>] {
+        (0..<segments).map { index in
+            let angle = Double(index) / Double(segments) * 2 * Double.pi
+            return SIMD2<Float>(
+                Float(cos(angle)) * radius,
+                Float(sin(angle)) * radius)
+        }
+    }
+
+    private static func arrowMaterial() -> PhysicallyBasedMaterial {
+        minimalMaterial(
+            tint: UIColor(red: 0.94, green: 0.20, blue: 0.30, alpha: 1),
+            roughness: 0.45,
+            metallic: 0.0,
+            emission: 0.35)
+    }
+
+    private static func dashMaterial() -> PhysicallyBasedMaterial {
+        minimalMaterial(
+            tint: UIColor(red: 0.97, green: 0.52, blue: 0.56, alpha: 1),
+            roughness: 0.6,
+            metallic: 0.0,
+            emission: 0.25)
+    }
+
+    private static func coinMaterial() -> PhysicallyBasedMaterial {
+        minimalMaterial(
+            tint: UIColor(red: 1.00, green: 0.79, blue: 0.35, alpha: 1),
+            roughness: 0.24,
+            metallic: 0.9,
+            emission: 0.3)
+    }
+
+    private static func minimalMaterial(
+        tint: UIColor, roughness: Float, metallic: Float, emission: Float
+    ) -> PhysicallyBasedMaterial {
         var material = PhysicallyBasedMaterial()
         material.baseColor = .init(tint: tint)
-        material.roughness = 0.32
-        material.metallic = 0.04
-        material.emissiveColor = .init(color: tint.withAlphaComponent(0.45))
-        material.emissiveIntensity = 0.65
-        // The mesh supplies both faces; culling off keeps it visible from any
-        // angle while the user walks around it.
+        material.roughness = .init(floatLiteral: roughness)
+        material.metallic = .init(floatLiteral: metallic)
+        material.emissiveColor = .init(color: tint.withAlphaComponent(CGFloat(emission)))
+        material.emissiveIntensity = 0.7
+        // Thin plates are seen from every angle; culling off keeps them solid.
         material.faceCulling = .none
         return material
     }
@@ -449,7 +597,7 @@ final class ARGuideController: NSObject, ObservableObject {
         return result
     }
 
-    /// Extrudes a convex outline (in the XZ plane, tip at +Z) into a prism.
+    /// Extrudes a convex outline (in the XZ plane, pointing +Z) into a prism.
     private static func extruded(outline raw: [SIMD2<Float>], thickness: Float) -> MeshResource {
         var outline = raw
         if signedArea(outline) < 0 { outline.reverse() }
@@ -502,7 +650,7 @@ final class ARGuideController: NSObject, ObservableObject {
         descriptor.primitives = .triangles(indices)
 
         return (try? MeshResource.generate(from: [descriptor]))
-            ?? MeshResource.generateBox(size: SIMD3<Float>(0.26, thickness, 0.92))
+            ?? MeshResource.generateBox(size: SIMD3<Float>(0.2, thickness, 0.86))
     }
 
     private static func signedArea(_ outline: [SIMD2<Float>]) -> Float {
@@ -524,8 +672,7 @@ extension ARGuideController: ARSessionDelegate {
         let code = (error as? ARError)?.code
         DispatchQueue.main.async {
             self.failure = code == .cameraUnauthorized ? .cameraDenied : .interrupted(error.localizedDescription)
-            self.arrow = nil
-            self.anchor = nil
+            self.assembly = nil
             self.status = .searching
         }
     }

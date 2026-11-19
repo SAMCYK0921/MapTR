@@ -67,8 +67,8 @@ enum RouteEngine {
                     id: 1,
                     titleEn: "Take the lift to the concourse",
                     titleZh: "乘搭升降機往大堂",
-                    descEn: "Follow ♿︎ signs. All MTR stations provide at least one step-free exit.",
-                    descZh: "跟隨 ♿︎ 指示；全綫車站均設最少一個無障礙出口。",
+                    descEn: "Usually in the middle of the platform. An accessible help button on the platform calls station staff if you cannot find it.",
+                    descZh: "一般位於月台中央；如找不到，月台設有無障礙召喚鈴，可按鈴請站務員協助。",
                     symbol: "figure.roll",
                     meta: "~2 min · 約 2 分鐘"
                 )
@@ -90,8 +90,8 @@ enum RouteEngine {
         steps.append(
             Waypoint(
                 id: 2,
-                titleEn: "Follow signs for Exit \(exit.id)",
-                titleZh: "跟隨 \(exit.id) 出口指示",
+                titleEn: "Head for Exit \(exit.id)",
+                titleZh: "前往 \(exit.id) 出口",
                 descEn: "Exit \(exit.id): \(exit.nameEn). Pass through the ticket gates.",
                 descZh: "\(exit.id) 出口：\(exit.nameZh)。經閘機出閘。",
                 symbol: "signpost.right.fill",
