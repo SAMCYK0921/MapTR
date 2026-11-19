@@ -421,6 +421,7 @@ private struct HelpMessage: Identifiable, Hashable {
 private struct HelpDetailSheet: View {
     @EnvironmentObject private var lang: Lang
     @EnvironmentObject private var help: HelpStore
+    @EnvironmentObject private var wallet: CoinWallet
     @Environment(\.dismiss) private var dismiss
     let station: Station
     let request: HelpRequest
@@ -428,6 +429,7 @@ private struct HelpDetailSheet: View {
 
     @State private var messages: [HelpMessage] = []
     @State private var draft = ""
+    @State private var reward: Int?
 
     private var current: HelpRequest { help.request(id: request.id) ?? request }
     private var targetExit: StationExit? {
@@ -449,6 +451,12 @@ private struct HelpDetailSheet: View {
                 .padding(.vertical, 12)
             }
             .safeAreaInset(edge: .bottom) { chatInput }
+            .overlay {
+                if let reward {
+                    rewardToast(reward)
+                        .transition(.scale(scale: 0.85).combined(with: .opacity))
+                }
+            }
             .navigationTitle(Text(lang.t("求助詳情", "Help request")))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -462,6 +470,27 @@ private struct HelpDetailSheet: View {
                 }
             }
         }
+    }
+
+    /// Celebration shown for a moment when the help is marked as done.
+    private func rewardToast(_ amount: Int) -> some View {
+        VStack(spacing: 10) {
+            Image(systemName: "circle.fill")
+                .font(.system(size: 36))
+                .foregroundStyle(Color(red: 1.0, green: 0.79, blue: 0.35))
+                .shadow(color: .black.opacity(0.25), radius: 14, y: 8)
+            Text("+\(amount)")
+                .font(.system(size: 42, weight: .heavy, design: .rounded))
+                .foregroundStyle(.white)
+                .contentTransition(.numericText())
+            Text(lang.t("多謝你幫手", "Thanks for helping"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.9))
+        }
+        .padding(.horizontal, 30)
+        .padding(.vertical, 26)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 26, style: .continuous))
+        .shadow(color: .black.opacity(0.2), radius: 24, y: 12)
     }
 
     private var infoCard: some View {
@@ -509,10 +538,16 @@ private struct HelpDetailSheet: View {
             if current.status != .completed {
                 Button {
                     help.complete(current.id)
+                    wallet.rewardForHelping()
                     Haptics.success()
-                    dismiss()
+                    withAnimation(.spring(response: 0.35, dampingFraction: 0.72)) {
+                        reward = CoinWallet.helpReward
+                    }
+                    // Let the +500 land before the sheet closes.
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { dismiss() }
                 } label: {
-                    Label(lang.t("已完成協助", "Mark as helped"),
+                    Label(lang.t("已完成協助 · +\(CoinWallet.helpReward) 金幣",
+                                 "Mark as helped · +\(CoinWallet.helpReward) coins"),
                           systemImage: "checkmark.circle.fill")
                         .frame(maxWidth: .infinity)
                 }

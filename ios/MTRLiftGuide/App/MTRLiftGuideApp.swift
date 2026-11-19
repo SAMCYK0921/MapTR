@@ -21,6 +21,7 @@ struct MTRLiftGuideApp: App {
     @StateObject private var lang = Lang()
     @StateObject private var journey = JourneyStore()
     @StateObject private var help = HelpStore()
+    @StateObject private var wallet = CoinWallet()
 
     var body: some Scene {
         WindowGroup {
@@ -29,6 +30,7 @@ struct MTRLiftGuideApp: App {
                 .environmentObject(lang)
                 .environmentObject(journey)
                 .environmentObject(help)
+                .environmentObject(wallet)
                 .tint(Color.navPurple)
         }
     }

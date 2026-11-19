@@ -11,8 +11,11 @@ struct RecentsView: View {
     @EnvironmentObject private var lang: Lang
     @EnvironmentObject private var network: Network
     @EnvironmentObject private var journey: JourneyStore
+    @EnvironmentObject private var wallet: CoinWallet
     @Binding var path: [Destination]
     let onStartAR: () -> Void
+
+    private let coinGold = Color(red: 1.0, green: 0.79, blue: 0.35)
 
     var body: some View {
         List {
@@ -24,6 +27,11 @@ struct RecentsView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(.vertical, 4)
+            }
+
+            Section {
+                walletCard
+                    .padding(.vertical, 4)
             }
 
             if journey.recents.isEmpty {
@@ -53,6 +61,45 @@ struct RecentsView: View {
         .safeAreaPadding(.bottom, 104)
         .navigationTitle(Text(lang.t("最近", "Recent")))
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    /// Running coin balance plus how many people the user has helped.
+    private var walletCard: some View {
+        HStack(spacing: 14) {
+            ZStack {
+                Circle()
+                    .fill(coinGold.opacity(0.16))
+                    .frame(width: 46, height: 46)
+                Image(systemName: "circle.fill")
+                    .font(.system(size: 17))
+                    .foregroundStyle(coinGold)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(lang.t("我的金幣", "My coins"))
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Text(wallet.total.formatted())
+                    .font(.system(size: 28, weight: .heavy, design: .rounded))
+                    .foregroundStyle(.primary)
+                    .contentTransition(.numericText())
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 3) {
+                Label(lang.t("已協助 \(wallet.peopleHelped) 人", "Helped \(wallet.peopleHelped)"),
+                      systemImage: "hand.raised.fill")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.navPurple)
+                Text(lang.t("每次協助 +\(CoinWallet.helpReward)",
+                            "+\(CoinWallet.helpReward) per person"))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(.vertical, 6)
+        .animation(.snappy(duration: 0.3), value: wallet.total)
     }
 
     @ViewBuilder

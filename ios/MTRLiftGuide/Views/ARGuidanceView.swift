@@ -15,6 +15,7 @@ import UIKit
 struct ARGuidanceView: View {
     @EnvironmentObject private var lang: Lang
     @EnvironmentObject private var network: Network
+    @EnvironmentObject private var wallet: CoinWallet
     let station: Station
     let exit: StationExit
     let mode: RouteMode
@@ -29,6 +30,8 @@ struct ARGuidanceView: View {
     @State private var lastDirectionSymbol = ""
     @State private var gameMode = false
     @State private var lastSpokenAt = Date.distantPast
+    /// Session coins already credited to the wallet.
+    @State private var reportedCoins = 0
 
     /// World tracking needs a real sensor stack; the simulator falls back to the
     /// plain camera feed with the compass overlay.
@@ -97,7 +100,16 @@ struct ARGuidanceView: View {
             arGuide.setGameMode(enabled)
         }
         .onChange(of: arGuide.coinsCollected) { _, count in
-            guard gameMode, count > 0 else { return }
+            guard gameMode else { return }
+            guard count >= reportedCoins else {
+                // Toggling game mode resets the session counter.
+                reportedCoins = count
+                return
+            }
+            let gained = count - reportedCoins
+            guard gained > 0 else { return }
+            reportedCoins = count
+            wallet.add(gained)
             if count % 4 == 0 { Haptics.success() }
         }
         .onDisappear {
@@ -187,6 +199,12 @@ struct ARGuidanceView: View {
                     .foregroundStyle(.white.opacity(0.75))
                     .contentTransition(.numericText())
             }
+            Text("·")
+                .foregroundStyle(.white.opacity(0.35))
+            Text(lang.t("共 \(wallet.total.formatted())", "total \(wallet.total.formatted())"))
+                .font(.caption2.weight(.medium))
+                .foregroundStyle(Color(red: 1.0, green: 0.79, blue: 0.35))
+                .contentTransition(.numericText())
         }
         .foregroundStyle(.white)
         .padding(.horizontal, 12)
