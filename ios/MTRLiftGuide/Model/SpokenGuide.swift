@@ -92,42 +92,47 @@ enum SpokenGuide {
 
     // MARK: - Direction
 
-    /// Where the target sits relative to where the listener is facing, said in
-    /// degrees rather than in localisable references to what is on screen.
+    /// Where the target sits relative to where the listener is facing, said on a
+    /// clock face (12 = straight ahead, 3 = right, 9 = left) — the frame blind
+    /// travellers actually use, instead of bearing degrees.
     static func directionSentence(
         heading: Double, target: Double, available: Bool
     ) -> Script {
         guard available else {
             return Script(
-                zh: "請把身體慢慢轉一圈，我會在你面向正確方向時告訴你。",
-                en: "Slowly turn on the spot; I will tell you when you are facing the right way.")
+                zh: "請把手機放低，慢慢轉動身體；當你面向正確方向時，我會用鐘面方向告訴你。",
+                en: "Slowly turn on the spot; I will give you the direction on a clock face once you face the right way.")
         }
 
         let delta = normalisedDelta(heading: heading, target: target)
         let magnitude = abs(delta)
-        let degrees = max(10, Int((magnitude / 10).rounded()) * 10)
+        let hour = clockHour(delta)
 
         switch magnitude {
         case ..<15:
             return Script(
-                zh: "你現在的方向正確，請繼續直行。",
-                en: "You are facing the right way — keep going straight.")
+                zh: "方向正確，目標在你正前方，即 12 點鐘方向；請繼續直行。",
+                en: "You are facing the right way — the exit is straight ahead at 12 o'clock. Keep going.")
         case ..<60:
             return delta > 0
                 ? Script(
-                    zh: "目標在你的右前方大約 \(degrees) 度。",
-                    en: "The exit is about \(degrees) degrees to your right.")
+                    zh: "目標在你的 \(hour) 點鐘方向，請稍微向右轉，然後直行。",
+                    en: "The exit is at your \(hour) o'clock. Turn slightly right, then go straight.")
                 : Script(
-                    zh: "目標在你的左前方大約 \(degrees) 度。",
-                    en: "The exit is about \(degrees) degrees to your left.")
+                    zh: "目標在你的 \(hour) 點鐘方向，請稍微向左轉，然後直行。",
+                    en: "The exit is at your \(hour) o'clock. Turn slightly left, then go straight.")
         case ..<125:
             return delta > 0
-                ? Script(zh: "請向右轉大約 \(degrees) 度。", en: "Turn right about \(degrees) degrees.")
-                : Script(zh: "請向左轉大約 \(degrees) 度。", en: "Turn left about \(degrees) degrees.")
+                ? Script(
+                    zh: "請向右轉，目標在你的 \(hour) 點鐘方向。",
+                    en: "Turn right — the exit is at your \(hour) o'clock.")
+                : Script(
+                    zh: "請向左轉，目標在你的 \(hour) 點鐘方向。",
+                    en: "Turn left — the exit is at your \(hour) o'clock.")
         default:
             return Script(
-                zh: "目標在你的後方，請轉身大約 \(degrees) 度。",
-                en: "The exit is behind you — turn around about \(degrees) degrees.")
+                zh: "目標在你身後，大約 \(hour) 點鐘方向，請轉身。",
+                en: "The exit is behind you, around your \(hour) o'clock — please turn around.")
         }
     }
 
@@ -137,14 +142,25 @@ enum SpokenGuide {
         let magnitude = abs(delta)
         guard magnitude > 25 else { return nil }
 
-        let degrees = max(10, Int((magnitude / 10).rounded()) * 10)
+        let hour = clockHour(delta)
 
         if magnitude > 150 {
-            return Script(zh: "方向相反，請轉身。", en: "You are facing the opposite way — please turn around.")
+            return Script(
+                zh: "方向相反，目標在你身後約 \(hour) 點鐘方向，請轉身。",
+                en: "You are facing the opposite way — the exit is around your \(hour) o'clock. Please turn around.")
         }
         return delta > 0
-            ? Script(zh: "向右轉 \(degrees) 度。", en: "Turn right \(degrees) degrees.")
-            : Script(zh: "向左轉 \(degrees) 度。", en: "Turn left \(degrees) degrees.")
+            ? Script(zh: "目標在你 \(hour) 點鐘方向，請向右轉。",
+                     en: "The exit is at your \(hour) o'clock — turn right.")
+            : Script(zh: "目標在你 \(hour) 點鐘方向，請向左轉。",
+                     en: "The exit is at your \(hour) o'clock — turn left.")
+    }
+
+    /// Compass delta → clock face: straight ahead is 12, a quarter turn right is 3.
+    private static func clockHour(_ delta: Double) -> Int {
+        var hour = Int((delta / 30).rounded()) % 12
+        if hour <= 0 { hour += 12 }
+        return hour
     }
 
     /// Positive means the target is clockwise (to the listener's right).

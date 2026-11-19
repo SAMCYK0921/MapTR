@@ -69,6 +69,12 @@ final class ARGuideController: NSObject, ObservableObject {
     private var compassOffset: Float?
     private var frozenYaw: Float?
 
+    // Movement, used to make sure a coin only counts when the user is actually
+    // walking the way the arrow points.
+    private var lastCameraPosition: SIMD3<Float>?
+    private var cameraVelocity = SIMD3<Float>(0, 0, 0)
+    private var travelUnit = SIMD3<Float>(0, 0, 1)
+
     private var elapsed: Float = 0
     private var assemblyAge: Float = 0
     private var lastAttempt: Float = -10
@@ -141,6 +147,8 @@ final class ARGuideController: NSObject, ObservableObject {
         frozenYaw = nil
         previousCameraYaw = nil
         turnRate = 0
+        lastCameraPosition = nil
+        cameraVelocity = SIMD3<Float>(0, 0, 0)
     }
 
     // MARK: - Guidance input
@@ -183,10 +191,17 @@ final class ARGuideController: NSObject, ObservableObject {
             previousCameraYaw = yaw
             cameraYaw = yaw
 
+            let position = SIMD3<Float>(columns.3.x, columns.3.y, columns.3.z)
+            if let previous = lastCameraPosition, deltaTime > 0 {
+                let instant = (position - previous) / deltaTime
+                cameraVelocity = cameraVelocity * 0.7 + instant * 0.3
+            }
+            lastCameraPosition = position
+
             updateCompassOffset()
             recycleIfBehind(
                 forward: SIMD3<Float>(forward.x, 0, forward.z),
-                cameraPosition: SIMD3<Float>(columns.3.x, columns.3.y, columns.3.z))
+                cameraPosition: position)
         }
 
         if assembly == nil {
@@ -209,6 +224,7 @@ final class ARGuideController: NSObject, ObservableObject {
     /// follows the target bearing.
     private func updateOrientation(of assembly: Assembly, deltaTime: Float) {
         let travel = Self.travelDirection(yaw: currentYaw())
+        travelUnit = travel
         let desired = Self.orientation(normal: planeNormal, travel: travel)
         let blend = min(1, max(0.08, deltaTime * 6))
         assembly.root.orientation = simd_slerp(assembly.root.orientation, desired, blend)
@@ -238,6 +254,18 @@ final class ARGuideController: NSObject, ObservableObject {
         let columns = frame.camera.transform.columns
         let camera = SIMD3<Float>(columns.3.x, columns.3.y, columns.3.z)
 
+        // A coin only counts when the user is walking the way the arrow points;
+        // wandering off (or reversing) must not farm coins.
+        let speed = simd_length(cameraVelocity)
+        let forwardness = speed > 0.001 ? simd_dot(cameraVelocity / speed, travelUnit) : 0
+        let walkingForward = speed > 0.15 && forwardness > 0.55
+
+        // Only the next coin in the line is collectable, so you cannot jump
+        // ahead and sweep several at once.
+        let nextIndex = assembly.coins.firstIndex {
+            $0.parent != nil && coinPickups[ObjectIdentifier($0)] == nil
+        }
+
         for (index, coin) in assembly.coins.enumerated() where coin.parent != nil {
             let key = ObjectIdentifier(coin)
 
@@ -257,6 +285,8 @@ final class ARGuideController: NSObject, ObservableObject {
             // Tilt first, then spin about the vertical axis so the face sweeps.
             coin.orientation = simd_quatf(
                 angle: elapsed * 2.1 + Float(index), axis: SIMD3<Float>(0, 1, 0)) * Self.coinTilt
+
+            guard walkingForward, index == nextIndex else { continue }
 
             let world = coin.position(relativeTo: nil)
             let flat = SIMD3<Float>(world.x - camera.x, 0, world.z - camera.z)

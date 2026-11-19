@@ -126,10 +126,14 @@ struct ARGuidanceView: View {
 
     private var overlay: some View {
         VStack {
-            HStack(alignment: .top, spacing: 10) {
-                exitButton
-                Spacer(minLength: 8)
+            // Step pill stays centred on screen; the exit button floats over the
+            // left edge instead of pushing the pill off-centre.
+            ZStack(alignment: .top) {
                 progressPill
+                HStack(spacing: 0) {
+                    exitButton
+                    Spacer(minLength: 0)
+                }
             }
             .padding(.top, 8)
 
@@ -173,6 +177,8 @@ struct ARGuidanceView: View {
                 .frame(width: 8, height: 8)
             Text("\(min(index + 1, waypoints.count)) / \(waypoints.count) · \(lang.t(station.zh, station.en)) → \(lang.t("出口", "Exit")) \(exit.id)")
                 .font(.caption.weight(.semibold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             if case .placed(let alignment) = arGuide.status {
                 Text(alignment == .floor
                      ? lang.t("AR · 地面", "AR · floor")
