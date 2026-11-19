@@ -170,15 +170,18 @@ struct ARGuidanceView: View {
         .accessibilityLabel(Text(lang.t("退出導航", "Exit guidance")))
     }
 
+    /// Two lines so the pill stays narrow enough to clear the exit button.
     private var progressPill: some View {
-        HStack(spacing: 8) {
-            Circle()
-                .fill(Color.red)
-                .frame(width: 8, height: 8)
-            Text("\(min(index + 1, waypoints.count)) / \(waypoints.count) · \(lang.t(station.zh, station.en)) → \(lang.t("出口", "Exit")) \(exit.id)")
-                .font(.caption.weight(.semibold))
-                .lineLimit(1)
-                .minimumScaleFactor(0.8)
+        VStack(spacing: 2) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(Color.red)
+                    .frame(width: 6, height: 6)
+                Text("\(min(index + 1, waypoints.count)) / \(waypoints.count) · \(lang.t(station.zh, station.en)) → \(lang.t("出口", "Exit")) \(exit.id)")
+                    .font(.caption.weight(.semibold))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.75)
+            }
             if case .placed(let alignment) = arGuide.status {
                 Text(alignment == .floor
                      ? lang.t("AR · 地面", "AR · floor")
@@ -188,9 +191,9 @@ struct ARGuidanceView: View {
             }
         }
         .foregroundStyle(.white)
-        .padding(.horizontal, 12)
-        .padding(.vertical, 7)
-        .glassSurface(cornerRadius: 20, tint: .black)
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .glassSurface(cornerRadius: 16, tint: .black)
     }
 
     /// Shown while the session is still looking for a surface to anchor onto.
